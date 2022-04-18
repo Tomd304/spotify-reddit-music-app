@@ -7,11 +7,12 @@ function Dashboard(props) {
     t: "all",
     sort: "relevance",
   });
+  const [musicItems, setMusicItems] = useState([]);
 
   useEffect(() => {
     const redditGet = async (q, t, sort) => {
       const res = await fetch(
-        "http://localhost:5000/search/reddit?" +
+        "http://localhost:5000/search/getItems?" +
           new URLSearchParams({
             q,
             t,
@@ -33,8 +34,6 @@ function Dashboard(props) {
     });
   };
 
-  const [musicItems, setMusicItems] = useState([]);
-  console.log(searchOps);
   return (
     <div>
       <form onSubmit={searchSubmit}>
@@ -80,9 +79,19 @@ function Dashboard(props) {
         <button>Update</button>
       </form>
       <ul>
-        {musicItems.map((item) => {
-          return <li>{item}</li>;
-        })}
+        {musicItems.length > 0 ? (
+          musicItems.map((item) => {
+            return (
+              <li style={{ border: "1px solid black", width: "250px" }}>
+                <p>{item.name}</p>
+                <p>{item.artist}</p>
+                <img height={80} width={80} src={item.image} />
+              </li>
+            );
+          })
+        ) : (
+          <p>no results</p>
+        )}
       </ul>
     </div>
   );
