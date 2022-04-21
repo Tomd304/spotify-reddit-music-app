@@ -155,16 +155,44 @@ const getSpotSearches = async (searchList) => {
         },
       };
       const res = JSON.parse(await requestPromise(options));
-      if (res.albums.items[0]) {
+      const album = validateAlbum(
+        res.albums.items,
+        item.redditAlbum,
+        item.redditArtist
+      );
+      if (album) {
         return {
           ...item,
-          name: res.albums.items[0].name,
-          image: res.albums.items[0].images[0].url,
-          artist: res.albums.items[0].artists[0].name,
+          name: album.name,
+          image: album.images[0].url,
+          artist: album.artists[0].name,
           searchURL: url,
         };
       }
     })
   );
   return spotResults;
+};
+
+const validateAlbum = (albums, confirmation1, confirmation2) => {
+  console.log("validating: " + confirmation1 + " / " + confirmation2);
+  if (albums.length == 0) {
+    return false;
+  } else if (albums.length == 1) {
+    return albums[0];
+  } else {
+    let found = false;
+    let correctAlbum = {};
+    albums.some((album) => {
+      if (
+        album.name == confirmation1.trim() ||
+        album.name == confirmation2.trim()
+      ) {
+        correctAlbum = album;
+        found = true;
+        return "exit loop";
+      }
+    });
+    return found ? correctAlbum : albums[0];
+  }
 };
