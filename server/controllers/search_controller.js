@@ -42,7 +42,7 @@ const parseRedditAlbums = (list, searchType) => {
       data = extractIDandType(child.data.url);
     } else {
       type = "text";
-      data = he.decode(child.data.title.split("]").pop()).replace("-", " ");
+      data = he.decode(child.data.title.split("]").pop()).replace("-", "");
     }
     return {
       type,
@@ -81,16 +81,17 @@ exports.getItems = async (req, res) => {
 };
 
 const getSpotDetails = async (urlList) => {
+  console.table(urlList);
   const albums = await getSpotAlbums(
     urlList.filter((item) => item.type == "spotify")
   );
   const searches = await getSpotSearches(
     urlList.filter((item) => item.type == "text")
   );
-  console.log("***********ALBUMS*****************");
-  console.log(prettyFormat(albums));
-  console.log("***********SEARCHES*****************");
-  console.log(prettyFormat(searches));
+  console.table(
+    [...albums, ...searches].filter((item) => typeof item !== "undefined")
+  );
+  return [...albums, ...searches].filter((item) => typeof item !== "undefined");
 };
 
 const getSpotAlbums = async (albumList) => {
@@ -119,7 +120,6 @@ const getSpotAlbums = async (albumList) => {
 };
 
 const getSpotSearches = async (searchList) => {
-  console.table(searchList);
   let spotResults = await Promise.all(
     searchList.map(async (item) => {
       let url = `https://api.spotify.com/v1/search?q=${encodeURI(
@@ -140,6 +140,7 @@ const getSpotSearches = async (searchList) => {
           name: res.albums.items[0].name,
           image: res.albums.items[0].images[0].url,
           artist: res.albums.items[0].artists[0].name,
+          searchURL: url,
         };
       }
     })
