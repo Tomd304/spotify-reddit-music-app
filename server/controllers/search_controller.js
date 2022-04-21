@@ -75,12 +75,26 @@ const extractSpotType = (str) => {
 };
 
 const extractArtist = (str) => {
-  let reducedStr = str.replace(/\[[^()]*\]/g, "");
+  let reducedStr = str
+    .replace(/\[[^()]*\]/g, "")
+    .replace(/\([^()]*\)/g, "")
+    .replace("and", "")
+    .replace("ft.", "")
+    .replace("/", "")
+    .replace("\\", "");
+
   return reducedStr.split(" - ")[0];
 };
 
 const extractAlbum = (str) => {
-  let reducedStr = str.replace(/\[[^()]*\]/g, "");
+  let reducedStr = str
+    .replace(/\[[^()]*\]/g, "")
+    .replace(/\([^()]*\)/g, "")
+    .replace("and", "")
+    .replace("ft.", "")
+    .replace("/", "")
+    .replace("\\", "");
+
   return reducedStr.split(" - ")[1];
 };
 
@@ -95,28 +109,38 @@ exports.getItems = async (req, res) => {
 
 const getSpotDetails = async (urlList) => {
   console.table(urlList);
-  const albums = await getSpotAlbums(
-    urlList.filter((item) => item.type == "spotify")
+  const albums = await getSpotItems(
+    urlList.filter((item) => item.spotifyType == "album"),
+    "album"
+  );
+  const tracks = await getSpotItems(
+    urlList.filter((item) => item.spotifyType == "track"),
+    "track"
   );
   const searches = await getSpotSearches(
     urlList.filter((item) => item.type == "text")
   );
   console.table(
-    [...albums, ...searches]
+    [...albums, ...tracks, ...searches]
       .filter((item) => typeof item !== "undefined")
       .sort((a, b) =>
         a.orderID > b.orderID ? 1 : b.orderID > a.orderID ? -1 : 0
       )
   );
-  return [...albums, ...searches]
+  return [...albums, ...tracks, ...searches]
     .filter((item) => typeof item !== "undefined")
     .sort((a, b) =>
       a.orderID > b.orderID ? 1 : b.orderID > a.orderID ? -1 : 0
     );
 };
 
-const getSpotAlbums = async (albumList) => {
-  let url = "https://api.spotify.com/v1/albums/?ids=";
+const getSpotItems = async (albumList, requestType) => {
+  if (albumList.length == 0) {
+    return [undefined];
+  }
+
+  let url = `https://api.spotify.com/v1/${requestType}s/?ids=`;
+
   albumList.forEach((item) => {
     url += item.id + ",";
   });
@@ -130,14 +154,25 @@ const getSpotAlbums = async (albumList) => {
     },
   };
   const res = JSON.parse(await requestPromise(options));
-  return albumList.map(function (item, i) {
-    return {
-      ...item,
-      name: res.albums[i].name,
-      image: res.albums[i].images[0].url,
-      artist: res.albums[i].artists[0].name,
-    };
-  });
+  if (requestType == "album") {
+    return albumList.map(function (item, i) {
+      return {
+        ...item,
+        name: res.albums[i].name,
+        image: res.albums[i].images[0].url,
+        artist: res.albums[i].artists[0].name,
+      };
+    });
+  } else if (requestType == "track") {
+    return albumList.map(function (item, i) {
+      return {
+        ...item,
+        name: res.tracks[i].album.name,
+        image: res.tracks[i].album.images[0].url,
+        artist: res.tracks[i].album.artists[0].name,
+      };
+    });
+  }
 };
 
 const getSpotSearches = async (searchList) => {
@@ -155,17 +190,32 @@ const getSpotSearches = async (searchList) => {
         },
       };
       const res = JSON.parse(await requestPromise(options));
-      const album = validateAlbum(
-        res.albums.items,
-        item.redditAlbum,
-        item.redditArtist
-      );
-      if (album) {
+      console.log("searching: " + url);
+      console.table(res.items);
+      const selectedItem =
+        item.requestType == "album"
+          ? validateAlbum(res.albums.items, item.redditAlbum, item.redditArtist)
+          : validateTrack(
+              res.tracks.items,
+              item.redditAlbum,
+              item.redditArtist
+            );
+      console.table(selectedItem.name);
+      if (selectedItem) {
+        if (selectedItem.type == "track") {
+          return {
+            ...item,
+            name: selectedItem.album.name,
+            image: selectedItem.album.images[0].url,
+            artist: selectedItem.album.artists[0].name,
+            searchURL: url,
+          };
+        }
         return {
           ...item,
-          name: album.name,
-          image: album.images[0].url,
-          artist: album.artists[0].name,
+          name: selectedItem.name,
+          image: selectedItem.images[0].url,
+          artist: selectedItem.artists[0].name,
           searchURL: url,
         };
       }
@@ -194,5 +244,28 @@ const validateAlbum = (albums, confirmation1, confirmation2) => {
       }
     });
     return found ? correctAlbum : albums[0];
+  }
+};
+
+const validateTrack = (tracks, confirmation1, confirmation2) => {
+  console.log("validating: " + confirmation1 + " / " + confirmation2);
+  if (tracks.length == 0) {
+    return false;
+  } else if (tracks.length == 1) {
+    return tracks[0].album;
+  } else {
+    let found = false;
+    let correctTrack = {};
+    tracks.some((track) => {
+      if (
+        track.name == confirmation1.trim() ||
+        track.name == confirmation2.trim()
+      ) {
+        correctTrack = track;
+        found = true;
+        return "exit loop";
+      }
+    });
+    return found ? correctTrack : tracks[0];
   }
 };
