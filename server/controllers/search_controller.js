@@ -27,48 +27,61 @@ const searchReddit = async (q, t, sort) => {
   };
 
   const res = JSON.parse(await requestPromise(options)).data.children;
-  const testURLS = parseRedditAlbums(res, searchType).filter(
-    (child) => child.score > 5
+  const redditData = parseRedditData(
+    res.filter((child) => child.data.score > 5),
+    searchType
   );
-
-  return testURLS;
+  return redditData;
 };
 
-const parseRedditAlbums = (list, searchType) => {
+const parseRedditData = (list, requestType) => {
+  let orderID = -1;
   const results = list.map((child) => {
-    let type, data;
+    orderID += 1;
+    let tempObj = {};
     if (child.data.url.includes("open.spotify.com")) {
-      type = "spotify";
-      data = extractIDandType(child.data.url);
+      tempObj = {
+        type: "spotify",
+        id: extractID(child.data.url),
+        spotifyType: extractSpotType(child.data.url),
+      };
     } else {
-      type = "text";
-      data = he.decode(child.data.title.split("]").pop()).replace("-", "");
+      tempObj = {
+        type: "text",
+        redditArtist: extractArtist(he.decode(child.data.title)),
+        redditAlbum: extractAlbum(he.decode(child.data.title)),
+      };
     }
     return {
-      type,
-      data,
-      title: he.decode(child.data.title),
+      orderID,
+      requestType,
+      redditTitle: he.decode(child.data.title).replace(/\[[^()]*\]/g, ""),
       timestamp: child.data.created,
       score: child.data.score,
-      searchType,
+      ...tempObj,
     };
   });
   return results;
 };
 
-const extractIDandType = (str) => {
-  let id = str.substring(str.lastIndexOf("/") + 1);
-  if (id.includes("?")) {
-    id = str.substring(str.lastIndexOf("/") + 1, str.lastIndexOf("?"));
-  }
-  if (id.includes("&")) {
-    id = str.substring(str.lastIndexOf("/") + 1, str.lastIndexOf("&"));
-  }
+const extractID = (str) => {
+  let splitStr = str.split("open.spotify.com/")[1];
+  let startIndex = splitStr.indexOf("/") + 1;
+  return splitStr.substring(startIndex, startIndex + 22);
+};
 
-  let type = str.includes("/album/") ? "albums" : "tracks";
-  let url = "https://api.spotify.com/v1/" + type + "/" + id;
+const extractSpotType = (str) => {
+  return str.split("open.spotify.com/")[1].split("/")[0];
+};
 
-  return url;
+const extractArtist = (str) => {
+  let reducedStr = str.replace(/\[[^()]*\]/g, "");
+  return reducedStr.split(" - ")[0];
+};
+
+const extractAlbum = (str) => {
+  let reducedStr = str.replace(/\[[^()]*\]/g, "");
+  return reducedStr.split(" - ")[1];
 };
 
 exports.getItems = async (req, res) => {
@@ -89,15 +102,23 @@ const getSpotDetails = async (urlList) => {
     urlList.filter((item) => item.type == "text")
   );
   console.table(
-    [...albums, ...searches].filter((item) => typeof item !== "undefined")
+    [...albums, ...searches]
+      .filter((item) => typeof item !== "undefined")
+      .sort((a, b) =>
+        a.orderID > b.orderID ? 1 : b.orderID > a.orderID ? -1 : 0
+      )
   );
-  return [...albums, ...searches].filter((item) => typeof item !== "undefined");
+  return [...albums, ...searches]
+    .filter((item) => typeof item !== "undefined")
+    .sort((a, b) =>
+      a.orderID > b.orderID ? 1 : b.orderID > a.orderID ? -1 : 0
+    );
 };
 
 const getSpotAlbums = async (albumList) => {
   let url = "https://api.spotify.com/v1/albums/?ids=";
   albumList.forEach((item) => {
-    url += item.data.split("/albums/")[1] + ",";
+    url += item.id + ",";
   });
   url = url.slice(0, -1);
   const options = {
@@ -123,8 +144,8 @@ const getSpotSearches = async (searchList) => {
   let spotResults = await Promise.all(
     searchList.map(async (item) => {
       let url = `https://api.spotify.com/v1/search?q=${encodeURI(
-        item.data.trim()
-      )}&type=${item.searchType}`;
+        item.redditArtist + " " + item.redditAlbum
+      )}&type=${item.requestType}`;
       let options = {
         url,
         method: "get",
