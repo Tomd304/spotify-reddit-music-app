@@ -26,9 +26,11 @@ const searchReddit = async (q, t, sort) => {
     qs: queries,
   };
 
-  const res = JSON.parse(await requestPromise(options)).data.children;
-  const redditData = parseRedditData(
-    res.filter((child) => child.data.score > 5),
+  const res = JSON.parse(await requestPromise(options));
+  const data = res.data.children;
+  const after = res.data.after;
+  let redditData = parseRedditData(
+    data.filter((child) => child.data.score > 5),
     searchType
   );
   return redditData;
@@ -86,24 +88,31 @@ const extractArtist = (str) => {
   let reducedStr = str
     .replace(/\[[^()]*\]/g, "")
     .replace(/\([^()]*\)/g, "")
-    .replace("and", "")
-    .replace("ft.", "")
-    .replace("/", "")
-    .replace("\\", "")
-    .replace("#", "");
-
-  return reducedStr.split(" - ")[0];
+    .replace("and", " ")
+    .replace("/", " ")
+    .replace("\\", " ")
+    .replace("#", " ")
+    .replace("&", " ")
+    .replace('"', " ")
+    .replace(":", " ");
+  reducedStr = reducedStr.split(" - ")[0];
+  reducedStr = reducedStr.includes("ft.")
+    ? reducedStr.split("ft.")[0]
+    : reducedStr;
+  reducedStr = reducedStr.trim();
+  return reducedStr;
 };
 
 const extractAlbum = (str) => {
   let reducedStr = str
     .replace(/\[[^()]*\]/g, "")
     .replace(/\([^()]*\)/g, "")
-    .replace("and", "")
-    .replace("ft.", "")
-    .replace("/", "")
-    .replace("\\", "")
-    .replace("#", "");
+    .replace("and", " ")
+    .replace("ft.", " ")
+    .replace("/", " ")
+    .replace("\\", " ")
+    .replace("#", " ")
+    .replace("&", " ");
 
   return reducedStr.split(" - ")[1];
 };
@@ -302,25 +311,3 @@ const validateTrack = (tracks) => {
       : false;
   }
 };
-
-// const validateTrack = (tracks, confirmation1, confirmation2) => {
-//   if (tracks.length == 0) {
-//     return false;
-//   } else if (tracks.length == 1) {
-//     return tracks[0].album;
-//   } else {
-//     let found = false;
-//     let correctTrack = {};
-//     tracks.some((track) => {
-//       if (
-//         track.name == confirmation1.trim() ||
-//         track.name == confirmation2.trim()
-//       ) {
-//         correctTrack = track;
-//         found = true;
-//         return "exit loop";
-//       }
-//     });
-//     return found ? correctTrack : tracks[0];
-//   }
-// };
