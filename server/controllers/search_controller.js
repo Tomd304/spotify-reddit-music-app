@@ -15,7 +15,7 @@ const searchReddit = async (q, t, sort) => {
     sort: sort,
     t: t,
     restrict_sr: 1,
-    limit: 30,
+    limit: 100,
     after: "after",
   };
 
@@ -65,13 +65,21 @@ const parseRedditData = (list, requestType) => {
 };
 
 const extractID = (str) => {
-  let splitStr = str.split("open.spotify.com/")[1];
-  let startIndex = splitStr.indexOf("/") + 1;
+  let splitStr = str.split(".spotify.com/")[1];
+
+  let startIndex;
+  try {
+    startIndex = splitStr.indexOf("/") + 1;
+  } catch (err) {
+    console.log(err);
+    console.log(str);
+  }
+
   return splitStr.substring(startIndex, startIndex + 22);
 };
 
 const extractSpotType = (str) => {
-  return str.split("open.spotify.com/")[1].split("/")[0];
+  return str.split(".spotify.com/")[1].split("/")[0];
 };
 
 const extractArtist = (str) => {
@@ -136,45 +144,61 @@ const getSpotDetails = async (urlList) => {
     );
 };
 
-const getSpotItems = async (albumList, requestType) => {
-  if (albumList.length == 0) {
+const getSpotItems = async (itemList, requestType) => {
+  if (itemList.length == 0) {
     return [undefined];
   }
+  let results = [];
+  const chunkSize = 10;
+  for (let i = 0; i < itemList.length; i += chunkSize) {
+    const chunk = itemList.slice(i, i + chunkSize);
 
-  let url = `https://api.spotify.com/v1/${requestType}s/?ids=`;
+    let url = `https://api.spotify.com/v1/${requestType}s/?ids=`;
 
-  albumList.forEach((item) => {
-    url += item.id + ",";
-  });
-  url = url.slice(0, -1);
-  const options = {
-    url,
-    method: "get",
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: "Bearer " + globalVal.access_token,
-    },
-  };
-  const res = JSON.parse(await requestPromise(options));
-  if (requestType == "album") {
-    return albumList.map(function (item, i) {
-      return {
-        ...item,
-        name: res.albums[i].name,
-        image: res.albums[i].images[0].url,
-        artist: res.albums[i].artists[0].name,
-      };
+    chunk.forEach((item) => {
+      url += item.id + ",";
     });
-  } else if (requestType == "track") {
-    return albumList.map(function (item, i) {
-      return {
-        ...item,
-        name: res.tracks[i].name,
-        image: res.tracks[i].album.images[0].url,
-        artist: res.tracks[i].album.artists[0].name,
-      };
-    });
+    url = url.slice(0, -1);
+    const options = {
+      url,
+      method: "get",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: "Bearer " + globalVal.access_token,
+      },
+    };
+    const res = JSON.parse(await requestPromise(options));
+    if (requestType == "album") {
+      chunk.forEach(function (item, i) {
+        try {
+          results.push({
+            ...item,
+            name: res.albums[i].name,
+            image: res.albums[i].images[0].url,
+            artist: res.albums[i].artists[0].name,
+          });
+        } catch (err) {
+          console.log("missing details for:");
+          console.table(item);
+        }
+      });
+    } else if (requestType == "track") {
+      chunk.forEach(function (item, i) {
+        try {
+          results.push({
+            ...item,
+            name: res.tracks[i].name,
+            image: res.tracks[i].album.images[0].url,
+            artist: res.tracks[i].album.artists[0].name,
+          });
+        } catch (err) {
+          console.log("missing details for:");
+          console.table(item);
+        }
+      });
+    }
   }
+  return results;
 };
 
 const getSpotSearches = async (searchList) => {
@@ -224,8 +248,9 @@ const getSpotSearches = async (searchList) => {
 };
 
 const validateAlbum = (albums, confirmation1, confirmation2) => {
-  console.log(typeof confirmation1 + typeof confirmation2);
-  console.log(confirmation1 + confirmation2);
+  if (confirmation2 && confirmation2.includes("Kids")) {
+    console.log("stop");
+  }
   if (albums.length == 0) {
     return false;
   } else if (albums.length == 1) {
@@ -235,10 +260,10 @@ const validateAlbum = (albums, confirmation1, confirmation2) => {
     let correctAlbum = {};
     albums.some((album) => {
       if (
-        typeof confirmation1 != "undefined" ||
-        typeof confirmation2 != "undefined" ||
-        album.name == confirmation1.trim() ||
-        album.name == confirmation2.trim()
+        typeof confirmation1 !== "undefined" &&
+        typeof confirmation2 !== "undefined" &&
+        (album.name.toUpperCase() == confirmation1.trim().toUpperCase() ||
+          album.name.toUpperCase() == confirmation2.trim().toUpperCase())
       ) {
         correctAlbum = album;
         found = true;
@@ -249,7 +274,7 @@ const validateAlbum = (albums, confirmation1, confirmation2) => {
   }
 };
 
-const validateTrack = (tracks, confirmation1, confirmation2) => {
+const validateTrack = (tracks) => {
   if (tracks.length == 0) {
     return false;
   } else if (tracks.length == 1 && tracks[0].album.album_type == "single") {
