@@ -15,7 +15,7 @@ const searchReddit = async (q, t, sort) => {
     sort: sort,
     t: t,
     restrict_sr: 1,
-    limit: 15,
+    limit: 30,
     after: "after",
   };
 
@@ -81,7 +81,8 @@ const extractArtist = (str) => {
     .replace("and", "")
     .replace("ft.", "")
     .replace("/", "")
-    .replace("\\", "");
+    .replace("\\", "")
+    .replace("#", "");
 
   return reducedStr.split(" - ")[0];
 };
@@ -93,7 +94,8 @@ const extractAlbum = (str) => {
     .replace("and", "")
     .replace("ft.", "")
     .replace("/", "")
-    .replace("\\", "");
+    .replace("\\", "")
+    .replace("#", "");
 
   return reducedStr.split(" - ")[1];
 };
@@ -167,7 +169,7 @@ const getSpotItems = async (albumList, requestType) => {
     return albumList.map(function (item, i) {
       return {
         ...item,
-        name: res.tracks[i].album.name,
+        name: res.tracks[i].name,
         image: res.tracks[i].album.images[0].url,
         artist: res.tracks[i].album.artists[0].name,
       };
@@ -190,8 +192,6 @@ const getSpotSearches = async (searchList) => {
         },
       };
       const res = JSON.parse(await requestPromise(options));
-      console.log("searching: " + url);
-      console.table(res.items);
       const selectedItem =
         item.requestType == "album"
           ? validateAlbum(res.albums.items, item.redditAlbum, item.redditArtist)
@@ -200,7 +200,6 @@ const getSpotSearches = async (searchList) => {
               item.redditAlbum,
               item.redditArtist
             );
-      console.table(selectedItem.name);
       if (selectedItem) {
         if (selectedItem.type == "track") {
           return {
@@ -225,7 +224,8 @@ const getSpotSearches = async (searchList) => {
 };
 
 const validateAlbum = (albums, confirmation1, confirmation2) => {
-  console.log("validating: " + confirmation1 + " / " + confirmation2);
+  console.log(typeof confirmation1 + typeof confirmation2);
+  console.log(confirmation1 + confirmation2);
   if (albums.length == 0) {
     return false;
   } else if (albums.length == 1) {
@@ -235,6 +235,8 @@ const validateAlbum = (albums, confirmation1, confirmation2) => {
     let correctAlbum = {};
     albums.some((album) => {
       if (
+        typeof confirmation1 != "undefined" ||
+        typeof confirmation2 != "undefined" ||
         album.name == confirmation1.trim() ||
         album.name == confirmation2.trim()
       ) {
@@ -248,24 +250,52 @@ const validateAlbum = (albums, confirmation1, confirmation2) => {
 };
 
 const validateTrack = (tracks, confirmation1, confirmation2) => {
-  console.log("validating: " + confirmation1 + " / " + confirmation2);
   if (tracks.length == 0) {
     return false;
-  } else if (tracks.length == 1) {
+  } else if (tracks.length == 1 && tracks[0].album.album_type == "single") {
     return tracks[0].album;
   } else {
     let found = false;
     let correctTrack = {};
+    let counter = 0;
     tracks.some((track) => {
-      if (
-        track.name == confirmation1.trim() ||
-        track.name == confirmation2.trim()
-      ) {
+      if (track.album.album_type == "single") {
         correctTrack = track;
         found = true;
         return "exit loop";
       }
+      if (counter > 1) {
+        found = false;
+        return "exit loop";
+      }
+      counter += 1;
     });
-    return found ? correctTrack : tracks[0];
+    return found
+      ? correctTrack
+      : tracks[0].album.album_type == "single"
+      ? tracks[0]
+      : false;
   }
 };
+
+// const validateTrack = (tracks, confirmation1, confirmation2) => {
+//   if (tracks.length == 0) {
+//     return false;
+//   } else if (tracks.length == 1) {
+//     return tracks[0].album;
+//   } else {
+//     let found = false;
+//     let correctTrack = {};
+//     tracks.some((track) => {
+//       if (
+//         track.name == confirmation1.trim() ||
+//         track.name == confirmation2.trim()
+//       ) {
+//         correctTrack = track;
+//         found = true;
+//         return "exit loop";
+//       }
+//     });
+//     return found ? correctTrack : tracks[0];
+//   }
+// };
