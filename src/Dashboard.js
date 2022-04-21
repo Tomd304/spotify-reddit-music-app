@@ -1,5 +1,7 @@
 import React from "react";
 import { useState, useEffect } from "react";
+import Card from "./components/Card";
+import "./Dashboard.css";
 
 function Dashboard(props) {
   const [searchOps, setSearchOps] = useState({
@@ -78,15 +80,16 @@ function Dashboard(props) {
         </select>
         <button>Update</button>
       </form>
-      <ul>
+      <ul className="card-container">
         {musicItems.length > 0 ? (
           musicItems.map((item) => {
             return (
-              <li style={{ border: "1px solid black", width: "250px" }}>
-                <p>{item.name}</p>
-                <p>{item.artist}</p>
-                <img height={80} width={80} src={item.image} />
-              </li>
+              <Card item={item} />
+              // <li style={{ border: "1px solid black", width: "250px" }}>
+              //   <p>{item.name}</p>
+              //   <p>{item.artist}</p>
+              //   <img height={80} width={80} src={item.image} />
+              // </li>
             );
           })
         ) : (
