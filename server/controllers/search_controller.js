@@ -24,23 +24,21 @@ const searchReddit = async (q, t, sort) => {
   // Sets manual search string for Reddit API based on request
   q =
     q == "album"
-      ? '"FRESH ALBUM" OR "FRESH EP" OR "FRESH MIXTAPE"'
-      : '"[FRESH]" -"FRESH ALBUM" -"FRESH EP" -"FRESH MIXTAPE" -"VIDEO"';
+      ? '?q=flair_name:"FRESH ALBUM" OR "FRESH ALBUM" OR "FRESH EP" OR "FRESH MIXTAPE"&'
+      : '?q="[FRESH]" -"FRESH ALBUM" -"FRESH EP" -"FRESH MIXTAPE" -"VIDEO"&';
 
-  const queries = {
-    q: q,
-    sort: sort,
-    t: t,
-    restrict_sr: 1,
-    limit: 40,
-    after: "after",
-  };
+  let url = "https://www.reddit.com/r/hiphopheads/search.json";
+  url += q;
+  url += "sort=" + sort + "&";
+  url += "t=" + t + "&";
+  url += "restrict_sr=" + "1" + "&";
+  url += "limit=" + "40" + "&";
+  url += "after=" + "after";
 
   const options = {
-    url: "https://www.reddit.com/r/hiphopheads/search.json",
+    url,
     method: "get",
     mode: "cors",
-    qs: queries,
   };
 
   //Makes call to reddit API
@@ -71,6 +69,12 @@ const parseRedditData = (list, requestType) => {
         type: "spotify",
         id: extractID(child.data.url),
         spotifyType: extractSpotType(child.data.url),
+      };
+    } else if (child.data.selftext.includes("open.spotify.com")) {
+      tempObj = {
+        type: "spotify",
+        id: extractID(child.data.selftext),
+        spotifyType: extractSpotType(child.data.selftext),
       };
     } else {
       tempObj = {
