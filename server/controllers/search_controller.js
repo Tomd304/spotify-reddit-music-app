@@ -3,8 +3,25 @@ const globalVal = require("../globalVariables");
 const he = require("he");
 const { format: prettyFormat } = require("pretty-format");
 
+exports.getItems = async (req, res) => {
+  const params = req.query;
+
+  //Gets reddit API call results
+  const redditData = await searchReddit(params.q, params.t, params.sort);
+
+  //Parses reddit results into useable data (array of objects)
+  const parsedRedditData = parseRedditData(redditData, params.q);
+
+  //Gets and validates Spotify API results for reddit titles
+  const details = await getSpotDetails(parsedRedditData);
+
+  res.json({
+    results: details,
+  });
+};
+
 const searchReddit = async (q, t, sort) => {
-  const searchType = q == "album" ? "album" : "track";
+  // Sets manual search string for Reddit API based on request
   q =
     q == "album"
       ? '"FRESH ALBUM" OR "FRESH EP" OR "FRESH MIXTAPE"'
@@ -15,7 +32,7 @@ const searchReddit = async (q, t, sort) => {
     sort: sort,
     t: t,
     restrict_sr: 1,
-    limit: 100,
+    limit: 40,
     after: "after",
   };
 
@@ -26,18 +43,26 @@ const searchReddit = async (q, t, sort) => {
     qs: queries,
   };
 
+  //Makes call to reddit API
   const res = JSON.parse(await requestPromise(options));
+
+  //Stores array of results
   const data = res.data.children;
+
+  //Stores after key to be used in next call
   const after = res.data.after;
-  let redditData = parseRedditData(
-    data.filter((child) => child.data.score > 5),
-    searchType
-  );
-  return redditData;
+
+  //Filters out results with low score / upvotes
+  const filteredData = data.filter((child) => child.data.score > 5);
+  return filteredData;
 };
 
 const parseRedditData = (list, requestType) => {
+  //Sets orderID to reorder array as spotify data is not returned in order
   let orderID = -1;
+
+  //Creates array of two types of object eith useable data from reddit api results.
+  //Filtered by reddit results that include a spotify link, and those that do not.
   const results = list.map((child) => {
     orderID += 1;
     let tempObj = {};
@@ -117,57 +142,57 @@ const extractAlbum = (str) => {
   return reducedStr.split(" - ")[1];
 };
 
-exports.getItems = async (req, res) => {
-  const params = req.query;
-  const results = await searchReddit(params.q, params.t, params.sort);
-  const details = await getSpotDetails(results);
-  res.json({
-    results: details,
-  });
-};
+const getSpotDetails = async (redditData) => {
+  console.table(redditData);
 
-const getSpotDetails = async (urlList) => {
-  console.table(urlList);
-  const albums = await getSpotItems(
-    urlList.filter((item) => item.spotifyType == "album"),
-    "album"
-  );
-  const tracks = await getSpotItems(
-    urlList.filter((item) => item.spotifyType == "track"),
-    "track"
-  );
-  const searches = await getSpotSearches(
-    urlList.filter((item) => item.type == "text")
-  );
-  console.table(
-    [...albums, ...tracks, ...searches]
-      .filter((item) => typeof item !== "undefined")
-      .sort((a, b) =>
-        a.orderID > b.orderID ? 1 : b.orderID > a.orderID ? -1 : 0
-      )
-  );
-  return [...albums, ...tracks, ...searches]
+  //Splits reddit results objects into 3 arrays. Spotify album urls, spotify track urls and Text for manual search
+  const [albumData, trackData, strSearchData] = [
+    redditData.filter((item) => item.spotifyType == "album"),
+    redditData.filter((item) => item.spotifyType == "track"),
+    redditData.filter((item) => item.type == "text"),
+  ];
+
+  //Makes different Spotify API calls depending on data supplied
+  //Then combines results back into single array
+  let spotifyResults = [
+    ...(await getSpotItems(albumData, "album")),
+    ...(await getSpotItems(trackData, "track")),
+    ...(await getSpotSearches(strSearchData)),
+  ];
+
+  //Filters out none results & resorts array in order of original reddit results
+  spotifyResults = spotifyResults
     .filter((item) => typeof item !== "undefined")
     .sort((a, b) =>
       a.orderID > b.orderID ? 1 : b.orderID > a.orderID ? -1 : 0
     );
+
+  console.table(spotifyResults);
+
+  return spotifyResults;
 };
 
 const getSpotItems = async (itemList, requestType) => {
+  //if no results, return undefined array
   if (itemList.length == 0) {
     return [undefined];
   }
+
   let results = [];
+
   const chunkSize = 10;
+
   for (let i = 0; i < itemList.length; i += chunkSize) {
+    //splits itemList into smaller array to not exceed API rate limit
     const chunk = itemList.slice(i, i + chunkSize);
 
+    //Constructs url with multiple id's
     let url = `https://api.spotify.com/v1/${requestType}s/?ids=`;
-
     chunk.forEach((item) => {
       url += item.id + ",";
     });
     url = url.slice(0, -1);
+
     const options = {
       url,
       method: "get",
@@ -176,7 +201,10 @@ const getSpotItems = async (itemList, requestType) => {
         Authorization: "Bearer " + globalVal.access_token,
       },
     };
+
     const res = JSON.parse(await requestPromise(options));
+
+    //Loops through spotify API res and creates useable object depending on album or track.
     if (requestType == "album") {
       chunk.forEach(function (item, i) {
         try {
@@ -213,9 +241,11 @@ const getSpotItems = async (itemList, requestType) => {
 const getSpotSearches = async (searchList) => {
   let spotResults = await Promise.all(
     searchList.map(async (item) => {
+      //Searches spotify API using manually parsed artist & item terms extracted from reddit title for each item
       let url = `https://api.spotify.com/v1/search?q=${encodeURI(
         item.redditArtist + " " + item.redditAlbum
       )}&type=${item.requestType}`;
+
       let options = {
         url,
         method: "get",
@@ -224,7 +254,10 @@ const getSpotSearches = async (searchList) => {
           Authorization: "Bearer " + globalVal.access_token,
         },
       };
+
       const res = JSON.parse(await requestPromise(options));
+
+      //Spotify API may return multiple results per search. Basic match on reddit title terms to try and specify correct item from list.
       const selectedItem =
         item.requestType == "album"
           ? validateAlbum(res.albums.items, item.redditAlbum, item.redditArtist)
@@ -257,14 +290,12 @@ const getSpotSearches = async (searchList) => {
 };
 
 const validateAlbum = (albums, confirmation1, confirmation2) => {
-  if (confirmation2 && confirmation2.includes("Kids")) {
-    console.log("stop");
-  }
   if (albums.length == 0) {
     return false;
   } else if (albums.length == 1) {
     return albums[0];
   } else {
+    //loop through search results and see if any terms match to reddit title terms
     let found = false;
     let correctAlbum = {};
     albums.some((album) => {
@@ -286,7 +317,9 @@ const validateAlbum = (albums, confirmation1, confirmation2) => {
 const validateTrack = (tracks) => {
   if (tracks.length == 0) {
     return false;
-  } else if (tracks.length == 1 && tracks[0].album.album_type == "single") {
+  }
+  //ensures that a full album is not selected from spotify api results
+  else if (tracks.length == 1 && tracks[0].album.album_type == "single") {
     return tracks[0].album;
   } else {
     let found = false;
@@ -298,6 +331,7 @@ const validateTrack = (tracks) => {
         found = true;
         return "exit loop";
       }
+      //only checks first two results as further results are usually not relevant
       if (counter > 1) {
         found = false;
         return "exit loop";
