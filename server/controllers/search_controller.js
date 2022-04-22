@@ -212,7 +212,15 @@ const getSpotItems = async (itemList, requestType) => {
             ...item,
             name: res.albums[i].name,
             image: res.albums[i].images[0].url,
-            artist: res.albums[i].artists[0].name,
+            url: res.albums[i].external_urls.spotify,
+            artist: {
+              name: res.albums[i].artists[0].name,
+              url: res.albums[i].artists[0].external_urls.spotify,
+            },
+            album: {
+              name: res.albums[i].name,
+              url: res.albums[i].external_urls.spotify,
+            },
           });
         } catch (err) {
           console.log("missing details for:");
@@ -226,7 +234,15 @@ const getSpotItems = async (itemList, requestType) => {
             ...item,
             name: res.tracks[i].name,
             image: res.tracks[i].album.images[0].url,
-            artist: res.tracks[i].album.artists[0].name,
+            url: res.tracks[i].external_urls.spotify,
+            artist: {
+              name: res.tracks[i].artists[0].name,
+              url: res.tracks[i].artists[0].external_urls.spotify,
+            },
+            album: {
+              name: res.tracks[i].album.name,
+              url: res.tracks[i].album.external_urls.spotify,
+            },
           });
         } catch (err) {
           console.log("missing details for:");
