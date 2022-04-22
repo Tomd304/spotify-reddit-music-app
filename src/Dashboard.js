@@ -41,10 +41,10 @@ function Dashboard(props) {
       <form onSubmit={searchSubmit}>
         <select name="q">
           <option name="album" value="album">
-            Album
+            Albums
           </option>
-          <option name="song" value="song">
-            Song
+          <option name="track" value="track">
+            Tracks
           </option>
         </select>
         <select name="t">
