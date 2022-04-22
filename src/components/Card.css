@@ -37,6 +37,18 @@ html {
     margin-bottom: 0.5em;
 }
 
+a {
+    color: white;
+    text-decoration: none;
+    /* no underline */
+}
+
+a:hover {
+    color: rgb(194, 194, 194);
+    text-decoration: underline;
+    /* no underline */
+}
+
 h1 {
     font-size: 1.5em;
     white-space: nowrap;
