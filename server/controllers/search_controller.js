@@ -13,7 +13,7 @@ exports.getItems = async (req, res) => {
   const parsedRedditData = parseRedditData(redditData, params.q);
 
   //Gets and validates Spotify API results for reddit titles
-  const details = await getSpotDetails(parsedRedditData);
+  const details = await getSpotDetails(parsedRedditData, params.q);
 
   res.json({
     results: details,
@@ -32,7 +32,7 @@ const searchReddit = async (q, t, sort) => {
   url += "sort=" + sort + "&";
   url += "t=" + t + "&";
   url += "restrict_sr=" + "1" + "&";
-  url += "limit=" + "40" + "&";
+  url += "limit=" + "75" + "&";
   url += "after=" + "after";
 
   const options = {
@@ -60,7 +60,7 @@ const parseRedditData = (list, requestType) => {
   let orderID = -1;
 
   //Creates array of two types of object eith useable data from reddit api results.
-  //Filtered by reddit results that include a spotify link, and those that do not.
+  //Filtered by reddit results that include a spotify link in title or description, and those that do not.
   const results = list.map((child) => {
     orderID += 1;
     let tempObj = {};
@@ -146,7 +146,7 @@ const extractAlbum = (str) => {
   return reducedStr.split(" - ")[1];
 };
 
-const getSpotDetails = async (redditData) => {
+const getSpotDetails = async (redditData, requestType) => {
   console.table(redditData);
 
   //Splits reddit results objects into 3 arrays. Spotify album urls, spotify track urls and Text for manual search
@@ -159,7 +159,7 @@ const getSpotDetails = async (redditData) => {
   //Makes different Spotify API calls depending on data supplied
   //Then combines results back into single array
   let spotifyResults = [
-    ...(await getSpotItems(albumData, "album")),
+    ...(await getSpotItems(albumData, "album", requestType)),
     ...(await getSpotItems(trackData, "track")),
     ...(await getSpotSearches(strSearchData)),
   ];
@@ -176,7 +176,7 @@ const getSpotDetails = async (redditData) => {
   return spotifyResults;
 };
 
-const getSpotItems = async (itemList, requestType) => {
+const getSpotItems = async (itemList, spotType, requestType) => {
   //if no results, return undefined array
   if (itemList.length == 0) {
     return [undefined];
@@ -191,7 +191,7 @@ const getSpotItems = async (itemList, requestType) => {
     const chunk = itemList.slice(i, i + chunkSize);
 
     //Constructs url with multiple id's
-    let url = `https://api.spotify.com/v1/${requestType}s/?ids=`;
+    let url = `https://api.spotify.com/v1/${spotType}s/?ids=`;
     chunk.forEach((item) => {
       url += item.id + ",";
     });
@@ -209,8 +209,12 @@ const getSpotItems = async (itemList, requestType) => {
     const res = JSON.parse(await requestPromise(options));
 
     //Loops through spotify API res and creates useable object depending on album or track.
-    if (requestType == "album") {
+    if (spotType == "album") {
       chunk.forEach(function (item, i) {
+        //if searching for track, filters out full albums accidentally picked up
+        if (requestType == "track" && res.albums[i].total_tracks > 2) {
+          return undefined;
+        }
         try {
           results.push({
             ...item,
@@ -231,26 +235,28 @@ const getSpotItems = async (itemList, requestType) => {
           console.table(item);
         }
       });
-    } else if (requestType == "track") {
+    } else if (spotType == "track") {
       chunk.forEach(function (item, i) {
-        try {
-          results.push({
-            ...item,
-            name: res.tracks[i].name,
-            image: res.tracks[i].album.images[0].url,
-            url: res.tracks[i].external_urls.spotify,
-            artist: {
-              name: res.tracks[i].artists[0].name,
-              url: res.tracks[i].artists[0].external_urls.spotify,
-            },
-            album: {
-              name: res.tracks[i].album.name,
-              url: res.tracks[i].album.external_urls.spotify,
-            },
-          });
-        } catch (err) {
-          console.log("missing details for:");
-          console.table(item);
+        if (res.tracks[i].type !== "album") {
+          try {
+            results.push({
+              ...item,
+              name: res.tracks[i].name,
+              image: res.tracks[i].album.images[0].url,
+              url: res.tracks[i].external_urls.spotify,
+              artist: {
+                name: res.tracks[i].artists[0].name,
+                url: res.tracks[i].artists[0].external_urls.spotify,
+              },
+              album: {
+                name: res.tracks[i].album.name,
+                url: res.tracks[i].album.external_urls.spotify,
+              },
+            });
+          } catch (err) {
+            console.log("missing details for:");
+            console.table(item);
+          }
         }
       });
     }
@@ -305,7 +311,7 @@ const getSpotSearches = async (searchList) => {
         } else if (selectedItem.type == "track") {
           return {
             ...item,
-            name: selectedItem.album.name,
+            name: selectedItem.name,
             image: selectedItem.album.images[0].url,
             url: selectedItem.external_urls.spotify,
             artist: {
@@ -356,12 +362,14 @@ const validateTrack = (tracks) => {
   //ensures that a full album is not selected from spotify api results
   else if (tracks.length == 1 && tracks[0].album.album_type == "single") {
     return tracks[0].album;
+  } else if (tracks[0].type == "track") {
+    return tracks[0];
   } else {
     let found = false;
     let correctTrack = {};
     let counter = 0;
     tracks.some((track) => {
-      if (track.album.album_type == "single") {
+      if (track.album.album_type == "single" || track.type == "track") {
         correctTrack = track;
         found = true;
         return "exit loop";
