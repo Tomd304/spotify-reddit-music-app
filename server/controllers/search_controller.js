@@ -283,22 +283,37 @@ const getSpotSearches = async (searchList) => {
               item.redditArtist
             );
       if (selectedItem) {
-        if (selectedItem.type == "track") {
+        if (selectedItem.type == "album") {
+          return {
+            ...item,
+            name: selectedItem.name,
+            image: selectedItem.images[0].url,
+            url: selectedItem.external_urls.spotify,
+            artist: {
+              name: selectedItem.artists[0].name,
+              url: selectedItem.artists[0].external_urls.spotify,
+            },
+            album: {
+              name: selectedItem.name,
+              url: selectedItem.external_urls.spotify,
+            },
+          };
+        } else if (selectedItem.type == "track") {
           return {
             ...item,
             name: selectedItem.album.name,
             image: selectedItem.album.images[0].url,
-            artist: selectedItem.album.artists[0].name,
-            searchURL: url,
+            url: selectedItem.external_urls.spotify,
+            artist: {
+              name: selectedItem.album.artists[0].name,
+              url: selectedItem.album.artists[0].external_urls.spotify,
+            },
+            album: {
+              name: selectedItem.album.name,
+              url: selectedItem.album.external_urls.spotify,
+            },
           };
         }
-        return {
-          ...item,
-          name: selectedItem.name,
-          image: selectedItem.images[0].url,
-          artist: selectedItem.artists[0].name,
-          searchURL: url,
-        };
       }
     })
   );
