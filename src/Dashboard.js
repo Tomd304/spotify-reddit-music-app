@@ -32,8 +32,8 @@ function Dashboard(props) {
     e.preventDefault();
     setSearchOps({
       q: e.target[0].value,
-      t: e.target[1].value,
-      sort: e.target[2].value,
+      sort: e.target[1].value,
+      t: e.target[2].value,
     });
   };
 
@@ -43,14 +43,7 @@ function Dashboard(props) {
       <ul className="card-container">
         {musicItems.length > 0 ? (
           musicItems.map((item) => {
-            return (
-              <Card item={item} />
-              // <li style={{ border: "1px solid black", width: "250px" }}>
-              //   <p>{item.name}</p>
-              //   <p>{item.artist}</p>
-              //   <img height={80} width={80} src={item.image} />
-              // </li>
-            );
+            return <Card item={item} />;
           })
         ) : (
           <p>no results</p>
