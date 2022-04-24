@@ -220,6 +220,7 @@ const getSpotItems = async (itemList, spotType, requestType) => {
             ...item,
             name: res.albums[i].name,
             image: res.albums[i].images[0].url,
+            released: res.albums[i].release_date,
             url: res.albums[i].external_urls.spotify,
             artist: {
               name: res.albums[i].artists[0].name,
@@ -244,6 +245,7 @@ const getSpotItems = async (itemList, spotType, requestType) => {
               name: res.tracks[i].name,
               image: res.tracks[i].album.images[0].url,
               url: res.tracks[i].external_urls.spotify,
+              released: res.tracks[i].release_date,
               artist: {
                 name: res.tracks[i].artists[0].name,
                 url: res.tracks[i].artists[0].external_urls.spotify,
@@ -299,6 +301,7 @@ const getSpotSearches = async (searchList) => {
             name: selectedItem.name,
             image: selectedItem.images[0].url,
             url: selectedItem.external_urls.spotify,
+            released: selectedItem.release_date,
             artist: {
               name: selectedItem.artists[0].name,
               url: selectedItem.artists[0].external_urls.spotify,
@@ -314,6 +317,7 @@ const getSpotSearches = async (searchList) => {
             name: selectedItem.name,
             image: selectedItem.album.images[0].url,
             url: selectedItem.external_urls.spotify,
+            released: selectedItem.release_date,
             artist: {
               name: selectedItem.album.artists[0].name,
               url: selectedItem.album.artists[0].external_urls.spotify,
