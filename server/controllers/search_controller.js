@@ -25,7 +25,7 @@ const searchReddit = async (q, t, sort) => {
   q =
     q == "album"
       ? '?q=flair_name:"FRESH ALBUM" OR "FRESH ALBUM" OR "FRESH EP" OR "FRESH MIXTAPE"&'
-      : '?q="[FRESH]" -"FRESH ALBUM" -"FRESH EP" -"FRESH MIXTAPE" -"VIDEO"&';
+      : '?q=flair_name:"FRESH" OR "FRESH" -flair_name:"FRESH ALBUM" -"FRESH ALBUM" -"FRESH EP" -"FRESH MIXTAPE" -"VIDEO"&';
 
   let url = "https://www.reddit.com/r/hiphopheads/search.json";
   url += q;
