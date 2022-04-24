@@ -6,7 +6,7 @@
     padding: 0.3em 0;
     position: fixed;
     bottom: 0;
-    margin-top: 0.5em;
+    border-top: white 1px solid;
 }
 
 .footer h1 {
