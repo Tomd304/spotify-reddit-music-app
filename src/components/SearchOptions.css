@@ -1,0 +1,56 @@
+.form-container {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    grid-gap: 1em;
+    width: 80%;
+    padding: 20px;
+    margin-top: 50px;
+    margin: auto;
+}
+
+select {
+    padding: .25em;
+    border: 0;
+    border-bottom: 2px solid currentcolor;
+    font-weight: bold;
+    letter-spacing: .15em;
+    border-radius: 0;
+    background-color: white;
+    color: #303030;
+    max-width: 12.5em;
+    width: 7.5em;
+}
+
+button {
+    padding: .25em;
+    border: 0;
+    border-bottom: 2px solid currentcolor;
+    font-weight: bold;
+    letter-spacing: .15em;
+    border-radius: 0.5em;
+    background-color: #303030;
+    grid-column: 1/3;
+    justify-self: center;
+    border: 0.1em white solid;
+    color: white;
+    padding: 0.3em 0.7em;
+    cursor: pointer;
+}
+
+select:focus, select:active {
+    outline: 0;
+    border-bottom-color: #333333;
+}
+
+.typeSelect {
+    grid-column: 1/3;
+    justify-self: center;
+}
+
+.timeSelect {
+    justify-self: start;
+}
+
+.sortSelect {
+    justify-self: end;
+}

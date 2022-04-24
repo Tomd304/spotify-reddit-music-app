@@ -1,13 +1,14 @@
 import React from "react";
 import { useState, useEffect } from "react";
 import Card from "./components/Card";
+import SearchOptions from "./components/SearchOptions";
 import "./Dashboard.css";
 
 function Dashboard(props) {
   const [searchOps, setSearchOps] = useState({
     q: "album",
-    t: "all",
-    sort: "relevance",
+    t: "year",
+    sort: "top",
   });
   const [musicItems, setMusicItems] = useState([]);
 
@@ -38,48 +39,7 @@ function Dashboard(props) {
 
   return (
     <div>
-      <form onSubmit={searchSubmit}>
-        <select name="q">
-          <option name="album" value="album">
-            Albums
-          </option>
-          <option name="track" value="track">
-            Tracks
-          </option>
-        </select>
-        <select name="t">
-          <option name="all" value="all">
-            All
-          </option>
-          <option name="year" value="year">
-            Year
-          </option>
-          <option name="month" value="month">
-            Month
-          </option>
-          <option name="week" value="week">
-            Week
-          </option>
-          <option name="day" value="day">
-            Day
-          </option>
-        </select>
-        <select name="sort">
-          <option name="relevance" value="relevance">
-            Relevance
-          </option>
-          <option name="hot" value="hot">
-            Hot
-          </option>
-          <option name="top" value="top">
-            Top
-          </option>
-          <option name="new" value="new">
-            New
-          </option>
-        </select>
-        <button>Update</button>
-      </form>
+      <SearchOptions searchSubmit={searchSubmit} />
       <ul className="card-container">
         {musicItems.length > 0 ? (
           musicItems.map((item) => {

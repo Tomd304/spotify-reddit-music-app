@@ -1,12 +1,21 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+html {
+    background-color: #222;
+    color: white;
+}
+
 .card-container {
     width: 80%;
-    height: 80%;
     padding: 20px;
     margin-top: 50px;
     display: flex;
     flex-wrap: wrap;
     justify-content: center;
     gap: 1em;
-    overflow-y: scroll;
     margin: auto;
 }
