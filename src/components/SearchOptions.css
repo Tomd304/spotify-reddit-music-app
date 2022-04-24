@@ -37,11 +37,11 @@ button {
     transition: 0.5s;
 }
 
-button:hover {
+.clickable:hover {
     transform: scale(1.1);
 }
 
-button:active {
+.clickable:active {
     background-color: white;
 }
 

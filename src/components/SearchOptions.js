@@ -3,7 +3,7 @@ import "./SearchOptions.css";
 const SearchOptions = (props) => {
   return (
     <form className="form-container" onSubmit={props.searchSubmit}>
-      <select name="q" className="typeSelect">
+      <select disabled={props.loading} name="q" className="typeSelect">
         <option name="album" value="album">
           Albums
         </option>
@@ -12,7 +12,7 @@ const SearchOptions = (props) => {
         </option>
       </select>
 
-      <select className="sortSelect" name="sort">
+      <select disabled={props.loading} className="sortSelect" name="sort">
         <option name="top" value="top">
           Top
         </option>
@@ -26,7 +26,7 @@ const SearchOptions = (props) => {
           New
         </option>
       </select>
-      <select className="timeSelect" name="t">
+      <select disabled={props.loading} className="timeSelect" name="t">
         <option name="year" value="year">
           Year
         </option>
@@ -43,7 +43,11 @@ const SearchOptions = (props) => {
           All
         </option>
       </select>
-      <button>Update</button>
+      {props.loading ? (
+        <button disabled={props.loading}>Please wait</button>
+      ) : (
+        <button className="clickable">Update</button>
+      )}
     </form>
   );
 };

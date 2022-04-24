@@ -46,7 +46,7 @@ function Dashboard(props) {
     <div className="view">
       <Header />
       <div className="dashboard">
-        <SearchOptions searchSubmit={searchSubmit} />
+        <SearchOptions searchSubmit={searchSubmit} loading={loading} />
         <ul className="card-container">
           {loading ? (
             <p>Loading...</p>
