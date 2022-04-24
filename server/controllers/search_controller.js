@@ -166,10 +166,17 @@ const getSpotDetails = async (redditData, requestType) => {
 
   //Filters out none results & resorts array in order of original reddit results
   spotifyResults = spotifyResults
-    .filter((item) => typeof item !== "undefined")
+    .filter((item) => typeof item !== "undefined" && isIllegalTerm(item))
     .sort((a, b) =>
       a.orderID > b.orderID ? 1 : b.orderID > a.orderID ? -1 : 0
     );
+
+  //Removes duplicates from array
+  spotifyResults = Array.from(
+    new Set(spotifyResults.map((item) => item.url))
+  ).map((url) => {
+    return spotifyResults.find((item) => item.url === url);
+  });
 
   console.table(spotifyResults);
 
@@ -391,4 +398,18 @@ const validateTrack = (tracks) => {
       ? tracks[0]
       : false;
   }
+};
+
+//filtering out manually identified issues with data parsing
+const isIllegalTerm = (item) => {
+  let name = item.name.toLowerCase();
+  let type = item.requestType;
+  if (
+    name.includes("karaoke") ||
+    name.includes("meditation") ||
+    (name.includes("donda") && type == "track")
+  ) {
+    return false;
+  }
+  return true;
 };
