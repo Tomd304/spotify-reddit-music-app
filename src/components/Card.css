@@ -1,24 +1,13 @@
-* {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
-}
-
-html {
-    background-color: #222;
-    color: white;
-}
-
 .card {
-    width: 14.5em;
+    width: 15em;
     display: flex;
     flex-direction: column;
     justify-content: center;
     align-items: flex-start;
     background-color: #303030;
     padding: 1em;
-    padding-left: 1.5em;
     border-radius: 0.5em;
+    text-align: center;
 }
 
 .card:hover {
@@ -28,9 +17,8 @@ html {
 
 
 .card-img {
-    height: 12.5em;
-    width: 12.5em;
-    margin-left: -0.5em;
+    height: 13em;
+    width: 13em;
 }
 
 .card-img, h1, p {
@@ -50,7 +38,24 @@ a:hover {
 }
 
 h1 {
-    font-size: 1.5em;
+    font-size: 1em;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    overflow: hidden;
+    width: 200px;
+}
+
+
+.card .artist {
+    font-size: 1em;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    overflow: hidden;
+    width: 200px;
+}
+
+.card .score {
+    font-size: 0.75em;
     white-space: nowrap;
     text-overflow: ellipsis;
     overflow: hidden;

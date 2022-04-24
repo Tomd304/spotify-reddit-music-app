@@ -6,11 +6,12 @@ const Card = (props) => {
       <a href={props.item.album.url}>
         <img src={props.item.image} className="card-img" />
       </a>
-      <a href={props.item.artist.url}>
-        <h1>{props.item.artist.name}</h1>
-      </a>
+      <p className="score">&uarr;{props.item.score}</p>
       <a href={props.item.url}>
-        <p>{props.item.name}</p>
+        <h1>{props.item.name}</h1>
+      </a>
+      <a className="artist" href={props.item.artist.url}>
+        <p>{props.item.artist.name}</p>
       </a>
     </div>
   );
