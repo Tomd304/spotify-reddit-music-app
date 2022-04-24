@@ -2,6 +2,7 @@ import React from "react";
 import { useState, useEffect } from "react";
 import Card from "./components/Card";
 import SearchOptions from "./components/SearchOptions";
+import Header from "./components/Header";
 import "./Dashboard.css";
 
 function Dashboard(props) {
@@ -39,6 +40,7 @@ function Dashboard(props) {
 
   return (
     <div>
+      <Header />
       <SearchOptions searchSubmit={searchSubmit} />
       <ul className="card-container">
         {musicItems.length > 0 ? (
