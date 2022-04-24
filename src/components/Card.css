@@ -1,5 +1,6 @@
 .card {
     width: 15em;
+    height: 19.75em;
     display: flex;
     flex-direction: column;
     justify-content: center;
@@ -37,7 +38,7 @@ a:hover {
     /* no underline */
 }
 
-h1 {
+.card-container h1 {
     font-size: 1em;
     white-space: nowrap;
     text-overflow: ellipsis;
