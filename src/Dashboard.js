@@ -13,9 +13,11 @@ function Dashboard(props) {
     sort: "top",
   });
   const [musicItems, setMusicItems] = useState([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const redditGet = async (q, t, sort) => {
+      setLoading(true);
       const res = await fetch(
         "http://localhost:5000/search/getItems?" +
           new URLSearchParams({
@@ -26,6 +28,7 @@ function Dashboard(props) {
       );
       const json = await res.json();
       setMusicItems(json.results);
+      setLoading(false);
     };
     redditGet(searchOps.q, searchOps.t, searchOps.sort);
   }, [searchOps]);
@@ -45,12 +48,14 @@ function Dashboard(props) {
       <div className="dashboard">
         <SearchOptions searchSubmit={searchSubmit} />
         <ul className="card-container">
-          {musicItems.length > 0 ? (
+          {loading ? (
+            <p>Loading...</p>
+          ) : musicItems.length > 0 ? (
             musicItems.map((item) => {
               return <Card item={item} />;
             })
           ) : (
-            <p>no results</p>
+            <p>No Results</p>
           )}
         </ul>
       </div>
