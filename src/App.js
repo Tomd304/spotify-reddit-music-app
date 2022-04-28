@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import Dashboard from "./Dashboard";
 import Login from "./Login";
+import Modal from "./components/Modal";
 import "./App.css";
 
 function App() {
@@ -17,7 +18,17 @@ function App() {
     getToken();
   }, []);
   console.log(token);
-  return <>{token === "" ? <Login /> : <Dashboard token={token} />}</>;
+  return (
+    <>
+      {token === "" ? (
+        <Login />
+      ) : (
+        <div>
+          <Dashboard token={token} />
+        </div>
+      )}
+    </>
+  );
 }
 
 export default App;

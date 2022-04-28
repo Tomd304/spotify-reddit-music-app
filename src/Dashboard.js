@@ -5,7 +5,7 @@ import SearchOptions from "./components/SearchOptions";
 import Header from "./components/Header";
 import Footer from "./components/Footer";
 import PlaylistLink from "./components/PlaylistLink";
-import Window from "./components/Window";
+import Modal from "./components/Modal";
 import "./Dashboard.css";
 
 function Dashboard(props) {
@@ -16,6 +16,9 @@ function Dashboard(props) {
   });
   const [musicItems, setMusicItems] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [showModal, setShowModal] = useState(false);
+  const [userPlaylists, setUserPlaylists] = useState([]);
+  const [activePlaylist, setActivePlaylist] = useState();
 
   useEffect(() => {
     const redditGet = async (q, t, sort) => {
@@ -45,19 +48,34 @@ function Dashboard(props) {
     });
   };
 
-  const getPlaylists = async (e) => {
+  const openPlaylistModal = async (e) => {
     e.preventDefault();
     const res = await fetch("http://localhost:5000/spotUser/getPlaylists");
     const json = await res.json();
-    json.results.forEach((i) => console.log(i.name));
+    setUserPlaylists(
+      json.results.map((i) => {
+        return { name: i.name, id: i.id };
+      })
+    );
+    document.body.style.overflow = "hidden";
+    setShowModal(true);
+  };
+
+  const closePlaylistModal = async (e) => {
+    e.preventDefault();
+    document.body.style.overflow = "";
+    setShowModal(false);
   };
 
   return (
     <div className="view">
+      {showModal ? (
+        <Modal closeModal={closePlaylistModal} userPlaylists={userPlaylists} />
+      ) : null}
       <Header />
       <div className="dashboard">
         <SearchOptions searchSubmit={searchSubmit} loading={loading} />
-        <PlaylistLink onClick={getPlaylists} />
+        <PlaylistLink onClick={openPlaylistModal} />
         <ul className="card-container">
           {loading ? (
             <p>Loading...</p>

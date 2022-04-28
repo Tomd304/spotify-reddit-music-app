@@ -66,6 +66,8 @@
     color: white;
 }
 
-.create-button {
-    margin: auto;
+.buttons {
+    display: flex;
+    justify-content: space-between;
+    width: 17em;
 }
