@@ -56,9 +56,15 @@ a:hover {
 }
 
 .card .score {
-    font-size: 0.75em;
+    font-size: 0.85em;
     white-space: nowrap;
     text-overflow: ellipsis;
     overflow: hidden;
+}
+
+.icons {
+    display: flex;
+    justify-content: space-evenly;
     width: 200px;
+    margin: 0.2em 0;
 }

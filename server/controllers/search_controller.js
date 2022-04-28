@@ -89,6 +89,7 @@ const parseRedditData = (list, requestType) => {
       redditTitle: he.decode(child.data.title).replace(/\[[^()]*\]/g, ""),
       timestamp: child.data.created,
       score: child.data.score,
+      redditURL: "https://www.reddit.com" + child.data.permalink,
       ...tempObj,
     };
   });
