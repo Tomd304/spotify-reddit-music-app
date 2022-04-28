@@ -4,6 +4,8 @@ import Card from "./components/Card";
 import SearchOptions from "./components/SearchOptions";
 import Header from "./components/Header";
 import Footer from "./components/Footer";
+import PlaylistLink from "./components/PlaylistLink";
+import Window from "./components/Window";
 import "./Dashboard.css";
 
 function Dashboard(props) {
@@ -18,6 +20,7 @@ function Dashboard(props) {
   useEffect(() => {
     const redditGet = async (q, t, sort) => {
       setLoading(true);
+      console.log("api fetch");
       const res = await fetch(
         "http://localhost:5000/search/getItems?" +
           new URLSearchParams({
@@ -42,11 +45,19 @@ function Dashboard(props) {
     });
   };
 
+  const getPlaylists = async (e) => {
+    e.preventDefault();
+    const res = await fetch("http://localhost:5000/spotUser/getPlaylists");
+    const json = await res.json();
+    json.results.forEach((i) => console.log(i.name));
+  };
+
   return (
     <div className="view">
       <Header />
       <div className="dashboard">
         <SearchOptions searchSubmit={searchSubmit} loading={loading} />
+        <PlaylistLink onClick={getPlaylists} />
         <ul className="card-container">
           {loading ? (
             <p>Loading...</p>

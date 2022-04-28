@@ -1,0 +1,9 @@
+.playlist-container {
+    width: 100%;
+    display: flex;
+    justify-content: space-around;
+}
+
+.playlist-btn {
+    width: 10em;
+}
