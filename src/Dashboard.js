@@ -39,7 +39,6 @@ const Dashboard = (props) => {
       );
       const json = await res.json();
       setMusicItems(json.results);
-      setItemsToSave([]);
       setLoading(false);
     };
     redditGet(searchOps.q, searchOps.t, searchOps.sort);
@@ -52,6 +51,7 @@ const Dashboard = (props) => {
       sort: e.target[1].value,
       t: e.target[2].value,
     });
+    setItemsToSave([]);
   };
 
   const saveToggle = (id) => {
