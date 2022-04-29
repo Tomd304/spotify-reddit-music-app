@@ -1,6 +1,7 @@
 import "./Card.css";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { solid, regular } from "@fortawesome/fontawesome-svg-core/import.macro"; // <-- import styles to be used
+import HeartIcon from "./HeartIcon";
 
 const Card = (props) => {
   const saveToggle = () => {
@@ -15,23 +16,13 @@ const Card = (props) => {
         <img src={props.item.image} className="card-img" />
       </a>
       <div className="icons">
-        {props.saved && props.toRemove ? (
-          <FontAwesomeIcon onClick={removeToggle} icon={regular("heart")} />
-        ) : props.saved ? (
-          <FontAwesomeIcon onClick={removeToggle} icon={solid("heart")} />
-        ) : props.toSave ? (
-          <FontAwesomeIcon
-            onClick={saveToggle}
-            className="accent"
-            icon={solid("heart")}
-          />
-        ) : (
-          <FontAwesomeIcon
-            onClick={saveToggle}
-            className="accent"
-            icon={regular("heart")}
-          />
-        )}
+        <HeartIcon
+          saved={props.saved}
+          toSave={props.toSave}
+          toRemove={props.toRemove}
+          saveToggle={saveToggle}
+          removeToggle={removeToggle}
+        />
 
         <p className="score">
           <FontAwesomeIcon icon={solid("arrow-up")} />
