@@ -15,13 +15,14 @@ const Dashboard = (props) => {
   const [musicItems, setMusicItems] = useState([]);
   const [loading, setLoading] = useState(true);
   const [savedAlbums, setSavedAlbums] = useState([]);
-  const getSavedAlbums = async () => {
-    console.log("getting saved");
-    const res = await fetch("http://localhost:5000/spotify/getSavedAlbums");
-    const json = await res.json();
-    setSavedAlbums(json.results);
-  };
+  const [itemsToSave, setItemsToSave] = useState([]);
   useEffect(() => {
+    const getSavedAlbums = async () => {
+      console.log("getting saved");
+      const res = await fetch("http://localhost:5000/spotify/getSavedAlbums");
+      const json = await res.json();
+      setSavedAlbums(json.results);
+    };
     getSavedAlbums();
   }, []);
 
@@ -38,6 +39,7 @@ const Dashboard = (props) => {
       );
       const json = await res.json();
       setMusicItems(json.results);
+      setItemsToSave([]);
       setLoading(false);
     };
     redditGet(searchOps.q, searchOps.t, searchOps.sort);
@@ -52,33 +54,46 @@ const Dashboard = (props) => {
     });
   };
 
-  const addSavedAlbum = async (id) => {
-    fetch(
-      "http://localhost:5000/spotify/saveAlbum?" +
+  const saveToggle = (id) => {
+    if (itemsToSave.includes(id)) {
+      setItemsToSave([...itemsToSave].filter((i) => i !== id));
+    } else {
+      console.log(itemsToSave.length);
+      console.log("saving");
+      console.log(itemsToSave.length);
+      setItemsToSave([...itemsToSave, id]);
+    }
+  };
+
+  const saveAlbums = async () => {
+    console.log("saving albums");
+    let ids = "";
+    itemsToSave.forEach((i) => (ids += i + ","));
+    ids.slice(ids.length, 1);
+    const added = await fetch(
+      "http://localhost:5000/spotify/saveAlbums?" +
         new URLSearchParams({
-          id,
+          ids,
         }),
       { method: "put" }
     );
-    setSavedAlbums([...savedAlbums, id]);
-  };
-
-  const removeSavedAlbum = async (id) => {
-    fetch(
-      "http://localhost:5000/spotify/removeAlbum?" +
-        new URLSearchParams({
-          id,
-        }),
-      { method: "delete" }
-    );
-    setSavedAlbums([...savedAlbums].filter((i) => i !== id));
+    console.log(added);
+    const itemsAdded = await added.json();
+    console.log(itemsAdded);
+    setSavedAlbums([...savedAlbums, ...itemsAdded.added.split(",")]);
+    setItemsToSave([]);
   };
 
   return (
     <div className="view">
       <Header />
       <div className="dashboard">
-        <SearchOptions searchSubmit={searchSubmit} loading={loading} />
+        <SearchOptions
+          searchSubmit={searchSubmit}
+          loading={loading}
+          itemsSelected={itemsToSave.length > 0 ? true : false}
+          saveItems={saveAlbums}
+        />
         <ul className="card-container">
           {loading ? (
             <p>Loading...</p>
@@ -87,8 +102,8 @@ const Dashboard = (props) => {
               return (
                 <Card
                   item={item}
-                  addSavedAlbum={addSavedAlbum}
-                  removeSavedAlbum={removeSavedAlbum}
+                  saveToggle={saveToggle}
+                  toSave={itemsToSave.includes(item.id) ? true : false}
                   saved={savedAlbums.includes(item.id) ? true : false}
                 />
               );

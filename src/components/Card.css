@@ -68,3 +68,7 @@ a:hover {
     width: 200px;
     margin: 0.2em 0;
 }
+
+.accent {
+    color: red
+}

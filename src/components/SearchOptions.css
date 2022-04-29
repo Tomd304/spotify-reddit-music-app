@@ -63,3 +63,8 @@ select:focus, select:active {
 .sortSelect {
     justify-self: end;
 }
+
+.not-clickable {
+cursor:not-allowed;
+color: rgb(194, 194, 194);
+}

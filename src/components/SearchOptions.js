@@ -46,7 +46,21 @@ const SearchOptions = (props) => {
       {props.loading ? (
         <button disabled={props.loading}>Please wait</button>
       ) : (
-        <button className="clickable">Update</button>
+        <button className="clickable">Search</button>
+      )}
+      {props.itemsSelected ? (
+        <button
+          disabled={props.loading}
+          type="button"
+          className="clickable"
+          onClick={props.saveItems}
+        >
+          Save selected to Spotify
+        </button>
+      ) : (
+        <button disabled={true} className="not-clickable">
+          Add items to save to Spotify
+        </button>
       )}
     </form>
   );

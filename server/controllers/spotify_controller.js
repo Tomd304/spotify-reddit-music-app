@@ -1,4 +1,3 @@
-const request = require("request");
 const requestPromise = require("request-promise");
 const globalVal = require("../globalVariables");
 
@@ -34,11 +33,11 @@ exports.getSavedAlbums = async (req, res) => {
   });
 };
 
-exports.saveAlbum = async (req, res) => {
-  const id = req.query.id;
+exports.saveAlbums = async (req, res) => {
+  const ids = req.query.ids;
   let url = "https://api.spotify.com/v1/me/albums";
   let qs = {
-    ids: id,
+    ids,
   };
 
   const options = {
@@ -52,8 +51,9 @@ exports.saveAlbum = async (req, res) => {
   };
   console.log("saving");
 
-  const response = await requestPromise(options);
+  const response = requestPromise(options);
   console.log(response);
+  res.json({ added: ids });
 };
 
 exports.removeAlbum = async (req, res) => {

@@ -4,7 +4,7 @@ var controller = require("../controllers/spotify_controller");
 
 router.get("/getSavedAlbums", controller.getSavedAlbums);
 
-router.put("/saveAlbum", controller.saveAlbum);
+router.put("/saveAlbums", controller.saveAlbums);
 
 router.delete("/removeAlbum", controller.removeAlbum);
 
