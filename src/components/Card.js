@@ -3,6 +3,12 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { solid, regular } from "@fortawesome/fontawesome-svg-core/import.macro"; // <-- import styles to be used
 
 const Card = (props) => {
+  const saveClick = () => {
+    props.addSavedAlbum(props.item.id);
+  };
+  const removeClick = () => {
+    props.removeSavedAlbum(props.item.id);
+  };
   return (
     <div className="card">
       <a href={props.item.url} rel="noreferrer" target="_blank">
@@ -10,9 +16,9 @@ const Card = (props) => {
       </a>
       <div className="icons">
         {props.saved ? (
-          <FontAwesomeIcon icon={solid("heart")} />
+          <FontAwesomeIcon onClick={removeClick} icon={solid("heart")} />
         ) : (
-          <FontAwesomeIcon icon={regular("heart")} />
+          <FontAwesomeIcon onClick={saveClick} icon={regular("heart")} />
         )}
 
         <p className="score">

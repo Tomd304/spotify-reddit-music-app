@@ -1,8 +1,8 @@
+const request = require("request");
 const requestPromise = require("request-promise");
 const globalVal = require("../globalVariables");
 
 exports.getSavedAlbums = async (req, res) => {
-  //Gets and validates Spotify API results for reddit titles
   let url = "https://api.spotify.com/v1/me/albums";
   let qs = {
     limit: 50,
@@ -32,4 +32,46 @@ exports.getSavedAlbums = async (req, res) => {
   res.json({
     results: ids,
   });
+};
+
+exports.saveAlbum = async (req, res) => {
+  const id = req.query.id;
+  let url = "https://api.spotify.com/v1/me/albums";
+  let qs = {
+    ids: id,
+  };
+
+  const options = {
+    url,
+    method: "put",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: "Bearer " + globalVal.access_token,
+    },
+    qs,
+  };
+  console.log("saving");
+
+  const response = await requestPromise(options);
+  console.log(response);
+};
+
+exports.removeAlbum = async (req, res) => {
+  const id = req.query.id;
+  let url = "https://api.spotify.com/v1/me/albums";
+  let qs = {
+    ids: id,
+  };
+
+  const options = {
+    url,
+    method: "delete",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: "Bearer " + globalVal.access_token,
+    },
+    qs,
+  };
+  const response = await requestPromise(options);
+  console.log(response);
 };

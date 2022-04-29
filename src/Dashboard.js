@@ -15,13 +15,13 @@ const Dashboard = (props) => {
   const [musicItems, setMusicItems] = useState([]);
   const [loading, setLoading] = useState(true);
   const [savedAlbums, setSavedAlbums] = useState([]);
-
+  const getSavedAlbums = async () => {
+    console.log("getting saved");
+    const res = await fetch("http://localhost:5000/spotify/getSavedAlbums");
+    const json = await res.json();
+    setSavedAlbums(json.results);
+  };
   useEffect(() => {
-    const getSavedAlbums = async () => {
-      const res = await fetch("http://localhost:5000/spotify/getSavedAlbums");
-      const json = await res.json();
-      setSavedAlbums(json.results);
-    };
     getSavedAlbums();
   }, []);
 
@@ -52,6 +52,28 @@ const Dashboard = (props) => {
     });
   };
 
+  const addSavedAlbum = async (id) => {
+    fetch(
+      "http://localhost:5000/spotify/saveAlbum?" +
+        new URLSearchParams({
+          id,
+        }),
+      { method: "put" }
+    );
+    setSavedAlbums([...savedAlbums, id]);
+  };
+
+  const removeSavedAlbum = async (id) => {
+    fetch(
+      "http://localhost:5000/spotify/removeAlbum?" +
+        new URLSearchParams({
+          id,
+        }),
+      { method: "delete" }
+    );
+    setSavedAlbums([...savedAlbums].filter((i) => i !== id));
+  };
+
   return (
     <div className="view">
       <Header />
@@ -65,6 +87,8 @@ const Dashboard = (props) => {
               return (
                 <Card
                   item={item}
+                  addSavedAlbum={addSavedAlbum}
+                  removeSavedAlbum={removeSavedAlbum}
                   saved={savedAlbums.includes(item.id) ? true : false}
                 />
               );

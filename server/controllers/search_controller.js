@@ -32,7 +32,7 @@ const searchReddit = async (q, t, sort) => {
   url += "sort=" + sort + "&";
   url += "t=" + t + "&";
   url += "restrict_sr=" + "1" + "&";
-  url += "limit=" + "75" + "&";
+  url += "limit=" + "30" + "&";
   url += "after=" + "after";
 
   const options = {
@@ -238,7 +238,6 @@ const getSpotItems = async (itemList, spotType, requestType) => {
               name: res.albums[i].name,
               url: res.albums[i].external_urls.spotify,
             },
-            saved: isSavedToSpotify(res.albums[i].id),
           });
         } catch (err) {
           console.log("missing details for:");
@@ -263,7 +262,6 @@ const getSpotItems = async (itemList, spotType, requestType) => {
                 name: res.tracks[i].album.name,
                 url: res.tracks[i].album.external_urls.spotify,
               },
-              saved: isSavedToSpotify(res.albums[i].id),
             });
           } catch (err) {
             console.log("missing details for:");
@@ -320,7 +318,7 @@ const getSpotSearches = async (searchList) => {
               name: selectedItem.name,
               url: selectedItem.external_urls.spotify,
             },
-            saved: isSavedToSpotify(selectedItem.id),
+            id: selectedItem.id,
           };
         } else if (selectedItem.type == "track") {
           return {
@@ -337,7 +335,7 @@ const getSpotSearches = async (searchList) => {
               name: selectedItem.album.name,
               url: selectedItem.album.external_urls.spotify,
             },
-            saved: isSavedToSpotify(selectedItem.id),
+            id: selectedItem.id,
           };
         }
       }
