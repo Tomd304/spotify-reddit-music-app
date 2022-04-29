@@ -18,9 +18,7 @@ exports.login = (req, res) => {
   console.log(globalVal.spotify_client_id);
   console.log(globalVal.spotify_client_secret);
   var scope =
-    "streaming \
-                        user-read-email \
-                        user-read-private";
+    "user-library-read user-library-modify user-read-email user-read-private";
 
   var state = generateRandomString(16);
 

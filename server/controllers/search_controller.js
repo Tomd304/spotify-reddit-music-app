@@ -238,6 +238,7 @@ const getSpotItems = async (itemList, spotType, requestType) => {
               name: res.albums[i].name,
               url: res.albums[i].external_urls.spotify,
             },
+            saved: isSavedToSpotify(res.albums[i].id),
           });
         } catch (err) {
           console.log("missing details for:");
@@ -262,6 +263,7 @@ const getSpotItems = async (itemList, spotType, requestType) => {
                 name: res.tracks[i].album.name,
                 url: res.tracks[i].album.external_urls.spotify,
               },
+              saved: isSavedToSpotify(res.albums[i].id),
             });
           } catch (err) {
             console.log("missing details for:");
@@ -318,6 +320,7 @@ const getSpotSearches = async (searchList) => {
               name: selectedItem.name,
               url: selectedItem.external_urls.spotify,
             },
+            saved: isSavedToSpotify(selectedItem.id),
           };
         } else if (selectedItem.type == "track") {
           return {
@@ -334,6 +337,7 @@ const getSpotSearches = async (searchList) => {
               name: selectedItem.album.name,
               url: selectedItem.album.external_urls.spotify,
             },
+            saved: isSavedToSpotify(selectedItem.id),
           };
         }
       }
@@ -400,6 +404,8 @@ const validateTrack = (tracks) => {
       : false;
   }
 };
+
+const isSavedToSpotify = (id) => {};
 
 //filtering out manually identified issues with data parsing
 const isIllegalTerm = (item) => {

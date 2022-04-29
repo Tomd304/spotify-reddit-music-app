@@ -9,7 +9,12 @@ const Card = (props) => {
         <img src={props.item.image} className="card-img" />
       </a>
       <div className="icons">
-        <FontAwesomeIcon icon={regular("heart")} />
+        {props.saved ? (
+          <FontAwesomeIcon icon={solid("heart")} />
+        ) : (
+          <FontAwesomeIcon icon={regular("heart")} />
+        )}
+
         <p className="score">
           <FontAwesomeIcon icon={solid("arrow-up")} />
           {" " + props.item.score}

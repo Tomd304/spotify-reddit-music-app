@@ -6,7 +6,7 @@ import Header from "./components/Header";
 import Footer from "./components/Footer";
 import "./Dashboard.css";
 
-function Dashboard(props) {
+const Dashboard = (props) => {
   const [searchOps, setSearchOps] = useState({
     q: "album",
     t: "year",
@@ -14,6 +14,16 @@ function Dashboard(props) {
   });
   const [musicItems, setMusicItems] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [savedAlbums, setSavedAlbums] = useState([]);
+
+  useEffect(() => {
+    const getSavedAlbums = async () => {
+      const res = await fetch("http://localhost:5000/spotify/getSavedAlbums");
+      const json = await res.json();
+      setSavedAlbums(json.results);
+    };
+    getSavedAlbums();
+  }, []);
 
   useEffect(() => {
     const redditGet = async (q, t, sort) => {
@@ -52,7 +62,12 @@ function Dashboard(props) {
             <p>Loading...</p>
           ) : musicItems.length > 0 ? (
             musicItems.map((item) => {
-              return <Card item={item} />;
+              return (
+                <Card
+                  item={item}
+                  saved={savedAlbums.includes(item.id) ? true : false}
+                />
+              );
             })
           ) : (
             <p>No Results</p>
@@ -62,6 +77,6 @@ function Dashboard(props) {
       <Footer />
     </div>
   );
-}
+};
 
 export default Dashboard;
