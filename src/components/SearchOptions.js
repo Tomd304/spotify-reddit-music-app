@@ -59,7 +59,7 @@ const SearchOptions = (props) => {
         </button>
       ) : (
         <button disabled={true} className="not-clickable">
-          Add items to save to Spotify
+          Select Albums to save
         </button>
       )}
     </form>
