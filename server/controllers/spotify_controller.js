@@ -52,15 +52,14 @@ exports.saveAlbums = async (req, res) => {
   console.log("saving");
 
   const response = requestPromise(options);
-  console.log(response);
   res.json({ added: ids });
 };
 
-exports.removeAlbum = async (req, res) => {
-  const id = req.query.id;
+exports.removeAlbums = async (req, res) => {
+  const ids = req.query.ids;
   let url = "https://api.spotify.com/v1/me/albums";
   let qs = {
-    ids: id,
+    ids,
   };
 
   const options = {
@@ -73,5 +72,5 @@ exports.removeAlbum = async (req, res) => {
     qs,
   };
   const response = await requestPromise(options);
-  console.log(response);
+  res.json({ removed: ids });
 };

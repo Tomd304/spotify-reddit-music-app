@@ -53,15 +53,11 @@ const SearchOptions = (props) => {
           disabled={props.loading}
           type="button"
           className="clickable"
-          onClick={props.saveItems}
+          onClick={props.updateAlbums}
         >
-          Save selected to Spotify
+          Add / Remove to Spotify Saved
         </button>
-      ) : (
-        <button disabled={true} className="not-clickable">
-          Select Albums to save
-        </button>
-      )}
+      ) : null}
     </form>
   );
 };

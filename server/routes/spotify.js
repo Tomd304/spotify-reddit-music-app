@@ -6,6 +6,6 @@ router.get("/getSavedAlbums", controller.getSavedAlbums);
 
 router.put("/saveAlbums", controller.saveAlbums);
 
-router.delete("/removeAlbum", controller.removeAlbum);
+router.delete("/removeAlbums", controller.removeAlbums);
 
 module.exports = router;

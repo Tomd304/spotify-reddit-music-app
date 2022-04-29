@@ -13,22 +13,29 @@ const Dashboard = (props) => {
     sort: "top",
   });
   const [musicItems, setMusicItems] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [musicItemsLoading, setMusicItemsLoading] = useState(true);
+  const [albumLoading, setAlbumLoading] = useState(true);
   const [savedAlbums, setSavedAlbums] = useState([]);
-  const [itemsToSave, setItemsToSave] = useState([]);
+  const [albumsSelected, setAlbumsSelected] = useState({
+    toSave: [],
+    toRemove: [],
+  });
+
   useEffect(() => {
     const getSavedAlbums = async () => {
       console.log("getting saved");
+      setAlbumLoading(true);
       const res = await fetch("http://localhost:5000/spotify/getSavedAlbums");
       const json = await res.json();
       setSavedAlbums(json.results);
+      setAlbumLoading(false);
     };
     getSavedAlbums();
   }, []);
 
   useEffect(() => {
     const redditGet = async (q, t, sort) => {
-      setLoading(true);
+      setMusicItemsLoading(true);
       const res = await fetch(
         "http://localhost:5000/search/getItems?" +
           new URLSearchParams({
@@ -39,7 +46,7 @@ const Dashboard = (props) => {
       );
       const json = await res.json();
       setMusicItems(json.results);
-      setLoading(false);
+      setMusicItemsLoading(false);
     };
     redditGet(searchOps.q, searchOps.t, searchOps.sort);
   }, [searchOps]);
@@ -51,24 +58,59 @@ const Dashboard = (props) => {
       sort: e.target[1].value,
       t: e.target[2].value,
     });
-    setItemsToSave([]);
+    setAlbumsSelected({ toSave: [], toRemove: [] });
   };
 
   const saveToggle = (id) => {
-    if (itemsToSave.includes(id)) {
-      setItemsToSave([...itemsToSave].filter((i) => i !== id));
+    if (albumsSelected.toSave.includes(id)) {
+      setAlbumsSelected({
+        ...albumsSelected,
+        toSave: [...albumsSelected.toSave].filter((i) => i !== id),
+      });
     } else {
-      console.log(itemsToSave.length);
-      console.log("saving");
-      console.log(itemsToSave.length);
-      setItemsToSave([...itemsToSave, id]);
+      setAlbumsSelected({
+        ...albumsSelected,
+        toSave: [...albumsSelected.toSave, id],
+      });
     }
   };
 
+  const removeToggle = (id) => {
+    if (albumsSelected.toRemove.includes(id)) {
+      setAlbumsSelected({
+        ...albumsSelected,
+        toRemove: [...albumsSelected.toRemove].filter((i) => i !== id),
+      });
+    } else {
+      setAlbumsSelected({
+        ...albumsSelected,
+        toRemove: [...albumsSelected.toRemove, id],
+      });
+    }
+  };
+
+  const updateAlbums = async () => {
+    let added;
+    let removed;
+    let newSaved = [...savedAlbums];
+    if (albumsSelected.toSave.length > 0) {
+      console.log("adding" + albumsSelected.toSave.length);
+      added = await saveAlbums();
+      newSaved = [...newSaved, ...added];
+      console.log("removing" + albumsSelected.toRemove.length);
+    }
+    if (albumsSelected.toRemove.length > 0) {
+      console.log("removing" + albumsSelected.toRemove.length);
+      removed = await removeAlbums();
+      newSaved = [...newSaved.filter((i) => !removed.includes(i))];
+    }
+    setSavedAlbums([...newSaved]);
+    setAlbumsSelected({ toSave: [], toRemove: [] });
+  };
+
   const saveAlbums = async () => {
-    console.log("saving albums");
     let ids = "";
-    itemsToSave.forEach((i) => (ids += i + ","));
+    albumsSelected.toSave.forEach((i) => (ids += i + ","));
     ids.slice(ids.length, 1);
     const added = await fetch(
       "http://localhost:5000/spotify/saveAlbums?" +
@@ -77,11 +119,24 @@ const Dashboard = (props) => {
         }),
       { method: "put" }
     );
-    console.log(added);
     const itemsAdded = await added.json();
-    console.log(itemsAdded);
-    setSavedAlbums([...savedAlbums, ...itemsAdded.added.split(",")]);
-    setItemsToSave([]);
+    return itemsAdded.added.split(",");
+  };
+
+  const removeAlbums = async () => {
+    let ids = "";
+    albumsSelected.toRemove.forEach((i) => (ids += i + ","));
+    ids.slice(ids.length, 1);
+    const removed = await fetch(
+      "http://localhost:5000/spotify/removeAlbums?" +
+        new URLSearchParams({
+          ids,
+        }),
+      { method: "delete" }
+    );
+    const itemsRemoved = await removed.json();
+    const removedArr = itemsRemoved.removed.split(",");
+    return removedArr;
   };
 
   return (
@@ -90,12 +145,17 @@ const Dashboard = (props) => {
       <div className="dashboard">
         <SearchOptions
           searchSubmit={searchSubmit}
-          loading={loading}
-          itemsSelected={itemsToSave.length > 0 ? true : false}
-          saveItems={saveAlbums}
+          loading={albumLoading || musicItemsLoading ? true : false}
+          itemsSelected={
+            albumsSelected.toSave.length > 0 ||
+            albumsSelected.toRemove.length > 0
+              ? true
+              : false
+          }
+          updateAlbums={updateAlbums}
         />
         <ul className="card-container">
-          {loading ? (
+          {albumLoading || musicItemsLoading ? (
             <p>Loading...</p>
           ) : musicItems.length > 0 ? (
             musicItems.map((item) => {
@@ -103,7 +163,13 @@ const Dashboard = (props) => {
                 <Card
                   item={item}
                   saveToggle={saveToggle}
-                  toSave={itemsToSave.includes(item.id) ? true : false}
+                  removeToggle={removeToggle}
+                  toSave={
+                    albumsSelected.toSave.includes(item.id) ? true : false
+                  }
+                  toRemove={
+                    albumsSelected.toRemove.includes(item.id) ? true : false
+                  }
                   saved={savedAlbums.includes(item.id) ? true : false}
                 />
               );

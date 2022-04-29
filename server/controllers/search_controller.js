@@ -32,7 +32,7 @@ const searchReddit = async (q, t, sort) => {
   url += "sort=" + sort + "&";
   url += "t=" + t + "&";
   url += "restrict_sr=" + "1" + "&";
-  url += "limit=" + "30" + "&";
+  url += "limit=" + "10" + "&";
   url += "after=" + "after";
 
   const options = {
