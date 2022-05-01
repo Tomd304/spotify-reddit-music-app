@@ -21,10 +21,10 @@ exports.getSavedAlbums = async (req, res) => {
   let response = JSON.parse(await requestPromise(options));
   let total = response.total;
   qs.offset = 50;
-  let ids = response.items.map((i) => i.album.id);
+  let ids = response.items.map((i) => i.album._id);
   while (total > qs.offset) {
     response = JSON.parse(await requestPromise(options));
-    ids.push(...response.items.map((i) => i.album.id));
+    ids.push(...response.items.map((i) => i.album._id));
     qs.offset += 50;
   }
   console.log("wait");

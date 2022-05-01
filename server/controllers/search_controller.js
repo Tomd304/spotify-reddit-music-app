@@ -67,13 +67,13 @@ const parseRedditData = (list, requestType) => {
     if (child.data.url.includes("open.spotify.com")) {
       tempObj = {
         type: "spotify",
-        id: extractID(child.data.url),
+        _id: extractID(child.data.url),
         spotifyType: extractSpotType(child.data.url),
       };
     } else if (child.data.selftext.includes("open.spotify.com")) {
       tempObj = {
         type: "spotify",
-        id: extractID(child.data.selftext),
+        _id: extractID(child.data.selftext),
         spotifyType: extractSpotType(child.data.selftext),
       };
     } else {
@@ -201,7 +201,7 @@ const getSpotItems = async (itemList, spotType, requestType) => {
     //Constructs url with multiple id's
     let url = `https://api.spotify.com/v1/${spotType}s/?ids=`;
     chunk.forEach((item) => {
-      url += item.id + ",";
+      url += item._id + ",";
     });
     url = url.slice(0, -1);
 
@@ -318,7 +318,7 @@ const getSpotSearches = async (searchList) => {
               name: selectedItem.name,
               url: selectedItem.external_urls.spotify,
             },
-            id: selectedItem.id,
+            _id: selectedItem.id,
           };
         } else if (selectedItem.type == "track") {
           return {
@@ -335,7 +335,7 @@ const getSpotSearches = async (searchList) => {
               name: selectedItem.album.name,
               url: selectedItem.album.external_urls.spotify,
             },
-            id: selectedItem.id,
+            _id: selectedItem.id,
           };
         }
       }

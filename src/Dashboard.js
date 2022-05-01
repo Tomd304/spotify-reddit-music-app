@@ -58,85 +58,6 @@ const Dashboard = (props) => {
       sort: e.target[1].value,
       t: e.target[2].value,
     });
-    setAlbumsSelected({ toSave: [], toRemove: [] });
-  };
-
-  const saveToggle = (id) => {
-    if (albumsSelected.toSave.includes(id)) {
-      setAlbumsSelected({
-        ...albumsSelected,
-        toSave: [...albumsSelected.toSave].filter((i) => i !== id),
-      });
-    } else {
-      setAlbumsSelected({
-        ...albumsSelected,
-        toSave: [...albumsSelected.toSave, id],
-      });
-    }
-  };
-
-  const removeToggle = (id) => {
-    if (albumsSelected.toRemove.includes(id)) {
-      setAlbumsSelected({
-        ...albumsSelected,
-        toRemove: [...albumsSelected.toRemove].filter((i) => i !== id),
-      });
-    } else {
-      setAlbumsSelected({
-        ...albumsSelected,
-        toRemove: [...albumsSelected.toRemove, id],
-      });
-    }
-  };
-
-  const updateAlbums = async () => {
-    let added;
-    let removed;
-    let newSaved = [...savedAlbums];
-    if (albumsSelected.toSave.length > 0) {
-      console.log("adding" + albumsSelected.toSave.length);
-      added = await saveAlbums();
-      newSaved = [...newSaved, ...added];
-      console.log("removing" + albumsSelected.toRemove.length);
-    }
-    if (albumsSelected.toRemove.length > 0) {
-      console.log("removing" + albumsSelected.toRemove.length);
-      removed = await removeAlbums();
-      newSaved = [...newSaved.filter((i) => !removed.includes(i))];
-    }
-    setSavedAlbums([...newSaved]);
-    setAlbumsSelected({ toSave: [], toRemove: [] });
-  };
-
-  const saveAlbums = async () => {
-    let ids = "";
-    albumsSelected.toSave.forEach((i) => (ids += i + ","));
-    ids.slice(ids.length, 1);
-    const added = await fetch(
-      "http://localhost:5000/spotify/saveAlbums?" +
-        new URLSearchParams({
-          ids,
-        }),
-      { method: "put" }
-    );
-    const itemsAdded = await added.json();
-    return itemsAdded.added.split(",");
-  };
-
-  const removeAlbums = async () => {
-    let ids = "";
-    albumsSelected.toRemove.forEach((i) => (ids += i + ","));
-    ids.slice(ids.length, 1);
-    const removed = await fetch(
-      "http://localhost:5000/spotify/removeAlbums?" +
-        new URLSearchParams({
-          ids,
-        }),
-      { method: "delete" }
-    );
-    const itemsRemoved = await removed.json();
-    const removedArr = itemsRemoved.removed.split(",");
-    return removedArr;
   };
 
   return (
@@ -146,33 +67,13 @@ const Dashboard = (props) => {
         <SearchOptions
           searchSubmit={searchSubmit}
           loading={albumLoading || musicItemsLoading ? true : false}
-          itemsSelected={
-            albumsSelected.toSave.length > 0 ||
-            albumsSelected.toRemove.length > 0
-              ? true
-              : false
-          }
-          updateAlbums={updateAlbums}
         />
         <ul className="card-container">
           {albumLoading || musicItemsLoading ? (
             <p>Loading...</p>
           ) : musicItems.length > 0 ? (
             musicItems.map((item) => {
-              return (
-                <Card
-                  item={item}
-                  saveToggle={saveToggle}
-                  removeToggle={removeToggle}
-                  toSave={
-                    albumsSelected.toSave.includes(item.id) ? true : false
-                  }
-                  toRemove={
-                    albumsSelected.toRemove.includes(item.id) ? true : false
-                  }
-                  saved={savedAlbums.includes(item.id) ? true : false}
-                />
-              );
+              return <Card item={item} />;
             })
           ) : (
             <p>No Results</p>

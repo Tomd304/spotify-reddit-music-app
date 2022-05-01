@@ -4,26 +4,12 @@ import { solid, regular } from "@fortawesome/fontawesome-svg-core/import.macro";
 import HeartIcon from "./HeartIcon";
 
 const Card = (props) => {
-  const saveToggle = () => {
-    props.saveToggle(props.item.id);
-  };
-  const removeToggle = () => {
-    props.removeToggle(props.item.id);
-  };
   return (
     <div className="card">
       <a href={props.item.url} rel="noreferrer" target="_blank">
         <img src={props.item.image} className="card-img" />
       </a>
       <div className="icons">
-        <HeartIcon
-          saved={props.saved}
-          toSave={props.toSave}
-          toRemove={props.toRemove}
-          saveToggle={saveToggle}
-          removeToggle={removeToggle}
-        />
-
         <p className="score">
           <FontAwesomeIcon icon={solid("arrow-up")} />
           {" " + props.item.score}

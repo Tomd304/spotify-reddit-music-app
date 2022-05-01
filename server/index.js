@@ -6,6 +6,8 @@ const authRouter = require("./routes/auth");
 const searchRouter = require("./routes/search");
 const spotifyRouter = require("./routes/spotify");
 
+const mongoose = require("mongoose");
+
 var app = express();
 
 app.use(cors());
