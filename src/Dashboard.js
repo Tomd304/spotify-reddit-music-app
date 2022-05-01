@@ -4,6 +4,7 @@ import Card from "./components/Card";
 import SearchOptions from "./components/SearchOptions";
 import Header from "./components/Header";
 import Footer from "./components/Footer";
+import Modal from "./components/Modal";
 import "./Dashboard.css";
 
 const Dashboard = (props) => {
@@ -20,6 +21,8 @@ const Dashboard = (props) => {
     toSave: [],
     toRemove: [],
   });
+  const [tracksSelected, setTracksSelected] = useState([]);
+  const [showModal, setShowModal] = useState(false);
 
   useEffect(() => {
     const getSavedAlbums = async () => {
@@ -89,6 +92,15 @@ const Dashboard = (props) => {
     }
   };
 
+  const trackToggle = (uri) => {
+    console.log("toggling " + uri);
+    if (tracksSelected.includes(uri)) {
+      setTracksSelected([...tracksSelected].filter((i) => i !== uri));
+    } else {
+      setTracksSelected([...tracksSelected, uri]);
+    }
+  };
+
   const updateAlbums = async () => {
     let added;
     let removed;
@@ -139,47 +151,68 @@ const Dashboard = (props) => {
     return removedArr;
   };
 
+  const openModal = async (e) => {
+    e.preventDefault();
+    document.body.style.overflow = "hidden";
+    setShowModal(true);
+  };
+
+  const closeModal = async (e) => {
+    e.preventDefault();
+    document.body.style.overflow = "";
+    setTracksSelected([]);
+    setShowModal(false);
+  };
+
   return (
-    <div className="view">
-      <Header />
-      <div className="dashboard">
-        <SearchOptions
-          searchSubmit={searchSubmit}
-          loading={albumLoading || musicItemsLoading ? true : false}
-          itemsSelected={
-            albumsSelected.toSave.length > 0 ||
-            albumsSelected.toRemove.length > 0
-              ? true
-              : false
-          }
-          updateAlbums={updateAlbums}
+    <div>
+      {showModal ? (
+        <Modal
+          closeModal={closeModal}
+          items={musicItems}
+          selectedItems={tracksSelected}
+          trackToggle={trackToggle}
         />
-        <ul className="card-container">
-          {albumLoading || musicItemsLoading ? (
-            <p>Loading...</p>
-          ) : musicItems.length > 0 ? (
-            musicItems.map((item) => {
-              return (
-                <Card
-                  item={item}
-                  saveToggle={saveToggle}
-                  removeToggle={removeToggle}
-                  toSave={
-                    albumsSelected.toSave.includes(item.id) ? true : false
-                  }
-                  toRemove={
-                    albumsSelected.toRemove.includes(item.id) ? true : false
-                  }
-                  saved={savedAlbums.includes(item.id) ? true : false}
-                />
-              );
-            })
-          ) : (
-            <p>No Results</p>
-          )}
-        </ul>
+      ) : null}
+      <div className="view">
+        <Header />
+        <div className="dashboard">
+          <SearchOptions
+            searchSubmit={searchSubmit}
+            loading={albumLoading || musicItemsLoading ? true : false}
+            updateAlbums={updateAlbums}
+            itemsFound={musicItems.length > 0 ? true : false}
+            showModal={openModal}
+          />
+          <ul className="card-container">
+            {albumLoading || musicItemsLoading ? (
+              <p>Loading...</p>
+            ) : musicItems.length > 0 ? (
+              musicItems.map((item) => {
+                return (
+                  <Card
+                    item={item}
+                    type={searchOps.q}
+                    saveToggle={saveToggle}
+                    removeToggle={removeToggle}
+                    trackToggle={trackToggle}
+                    toSave={
+                      albumsSelected.toSave.includes(item.id) ? true : false
+                    }
+                    toRemove={
+                      albumsSelected.toRemove.includes(item.id) ? true : false
+                    }
+                    saved={savedAlbums.includes(item.id) ? true : false}
+                  />
+                );
+              })
+            ) : (
+              <p>No Results</p>
+            )}
+          </ul>
+        </div>
+        <Footer />
       </div>
-      <Footer />
     </div>
   );
 };

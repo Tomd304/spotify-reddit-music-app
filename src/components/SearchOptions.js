@@ -48,14 +48,9 @@ const SearchOptions = (props) => {
       ) : (
         <button className="clickable">Search</button>
       )}
-      {props.itemsSelected ? (
-        <button
-          disabled={props.loading}
-          type="button"
-          className="clickable"
-          onClick={props.updateAlbums}
-        >
-          Add / Remove to Spotify Saved
+      {props.itemsFound && props.loading == false ? (
+        <button type="button" className="clickable" onClick={props.showModal}>
+          Save To Spotify
         </button>
       ) : null}
     </form>

@@ -1,0 +1,73 @@
+#overlay {
+    height: 100%;
+    width: 100%;
+    position: absolute;
+    top: 0;
+    left: 0;
+    background-color: rgba(0, 0, 0, 0.8);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.pop-up {
+    width: 20em;
+    background-color: #303030;
+    border: 0.1em white solid;
+    padding: 1em;
+    display: block;
+    z-index: 20;
+    position: fixed;
+    margin: auto;
+    letter-spacing: .1em;
+
+}
+
+.pop-up .header {
+    text-align: left;
+    display: flex;
+    text-align: center;
+    align-items: center;
+    font-weight: 900;
+}
+
+
+.pop-up .list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.2em;
+    height: 25em;
+    overflow-y: scroll;
+    margin-bottom: 1em;
+}
+
+.pop-up li {
+    list-style: none;
+    color: #222;
+    background-color: #fff;
+    padding: 0.5em;
+    text-align: left;
+    text-overflow: ellipsis;
+    overflow: hidden;
+    flex-shrink: 0;
+    height: 2em;
+    cursor: pointer;
+    border-radius: 0.2em;
+}
+
+.pop-up li:hover {
+    background: rgb(36, 36, 36);
+    color: white;
+}
+
+.pop-up .active-li {
+    border: 0.1em solid #222;
+    background: rgb(36, 36, 36);
+    color: white;
+}
+
+.buttons {
+    display: flex;
+    justify-content: space-between;
+    width: 17em;
+}

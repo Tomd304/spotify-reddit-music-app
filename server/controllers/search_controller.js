@@ -220,7 +220,7 @@ const getSpotItems = async (itemList, spotType, requestType) => {
     if (spotType == "album") {
       chunk.forEach(function (item, i) {
         //if searching for track, filters out full albums accidentally picked up
-        if (requestType == "track" && res.albums[i].total_tracks > 2) {
+        if (requestType == "track" && res.albums[i].total_tracks > 1) {
           return undefined;
         }
         try {
@@ -238,6 +238,7 @@ const getSpotItems = async (itemList, spotType, requestType) => {
               name: res.albums[i].name,
               url: res.albums[i].external_urls.spotify,
             },
+            uri: res.albums[i].tracks.items[0].uri,
           });
         } catch (err) {
           console.log("missing details for:");
@@ -262,6 +263,7 @@ const getSpotItems = async (itemList, spotType, requestType) => {
                 name: res.tracks[i].album.name,
                 url: res.tracks[i].album.external_urls.spotify,
               },
+              uri: res.tracks[i].uri,
             });
           } catch (err) {
             console.log("missing details for:");
@@ -336,6 +338,7 @@ const getSpotSearches = async (searchList) => {
               url: selectedItem.album.external_urls.spotify,
             },
             id: selectedItem.id,
+            uri: selectedItem.uri,
           };
         }
       }
@@ -402,8 +405,6 @@ const validateTrack = (tracks) => {
       : false;
   }
 };
-
-const isSavedToSpotify = (id) => {};
 
 //filtering out manually identified issues with data parsing
 const isIllegalTerm = (item) => {
