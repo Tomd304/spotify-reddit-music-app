@@ -45,8 +45,10 @@ const Dashboard = (props) => {
           })
       );
       const json = await res.json();
+      console.log(json);
       setMusicItems(json.results);
       setMusicItemsLoading(false);
+      console.log(musicItems);
     };
     redditGet(searchOps.q, searchOps.t, searchOps.sort);
   }, [searchOps]);

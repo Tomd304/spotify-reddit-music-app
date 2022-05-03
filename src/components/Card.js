@@ -6,28 +6,28 @@ import HeartIcon from "./HeartIcon";
 const Card = (props) => {
   return (
     <div className="card">
-      <a href={props.item.url} rel="noreferrer" target="_blank">
-        <img src={props.item.image} className="card-img" />
+      <a href={props.item.spotInfo.url} rel="noreferrer" target="_blank">
+        <img src={props.item.spotInfo.image} className="card-img" />
       </a>
       <div className="icons">
         <p className="score">
           <FontAwesomeIcon icon={solid("arrow-up")} />
-          {" " + props.item.score}
+          {" " + props.item.redditInfo.score}
         </p>
-        <a href={props.item.redditURL} rel="noreferrer" target="_blank">
+        <a href={props.item.redditInfo.url} rel="noreferrer" target="_blank">
           <FontAwesomeIcon icon={regular("message")} />
         </a>
       </div>
-      <a href={props.item.url} rel="noreferrer" target="_blank">
-        <h1>{props.item.name}</h1>
+      <a href={props.item.spotInfo.url} rel="noreferrer" target="_blank">
+        <h1>{props.item.spotInfo.name}</h1>
       </a>
       <a
         className="artist"
-        href={props.item.artist.url}
+        href={props.item.spotInfo.artist.url}
         rel="noreferrer"
         target="_blank"
       >
-        <p>{props.item.artist.name}</p>
+        <p>{props.item.spotInfo.artist.name}</p>
       </a>
     </div>
   );

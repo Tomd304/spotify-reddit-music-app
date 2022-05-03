@@ -1,17 +1,15 @@
 let mongoose = require("mongoose");
 let Schema = mongoose.Schema;
 
-let MusicItemSchema = new Schema({
-  album: { type: Schema.Types.ObjectId, ref: "Album" },
-  artist: { type: Schema.Types.ObjectId, ref: "Artist" },
-  _id: { type: String, required: true },
-  image: { type: String, required: true },
-  name: { type: String, required: true },
-  released: { type: String, required: true },
-  requestType: { type: String, required: true },
-  spotifyType: { type: String, required: true },
-  timestamp: { type: Date, required: true },
-  url: { type: String, required: true },
-});
-
+let MusicItemSchema = new Schema(
+  {
+    _id: { type: String, required: true },
+    requestType: { type: String, required: true },
+    type: { type: String, required: true },
+    redditInfo: { type: Object },
+    spotInfoFound: { type: Boolean, required: true },
+    spotInfo: { type: Object },
+  },
+  { strict: false }
+);
 module.exports = mongoose.model("MusicItem", MusicItemSchema);

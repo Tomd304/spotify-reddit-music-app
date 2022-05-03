@@ -2,8 +2,10 @@ const requestPromise = require("request-promise");
 const globalVal = require("../globalVariables");
 const he = require("he");
 const { format: prettyFormat } = require("pretty-format");
+let MusicItem = require("../models/music-item");
 
 exports.getItems = async (req, res) => {
+  console.time("dbsave");
   const params = req.query;
 
   //Gets reddit API call results
@@ -11,12 +13,40 @@ exports.getItems = async (req, res) => {
 
   //Parses reddit results into useable data (array of objects)
   const parsedRedditData = parseRedditData(redditData, params.q);
+  const redditIDs = parsedRedditData.map((i) => i._id);
+  const dbData = await MusicItem.find({
+    _id: {
+      $in: redditIDs,
+    },
+  });
+  let dbDetails = [];
+  let dbIDs = [];
+  if (dbData.length > 0) {
+    dbDetails = dbData.map((i) => i._doc);
+    dbIDs = dbDetails.map((i) => i._id);
+  }
+  const apiItems = parsedRedditData.filter((i) => !dbIDs.includes(i._id));
+  let apiDetails = [];
+  if (apiItems.length > 0) {
+    apiDetails = await getSpotDetails(apiItems, params.q);
+    await MusicItem.insertMany(apiDetails);
+  }
+  let allItems = [...dbDetails, ...apiDetails];
+  //sorts back to original order
+  allItems = redditIDs
+    .map((id) => allItems.find((item) => item._id == id))
+    .filter((i) => typeof i !== "undefined");
 
-  //Gets and validates Spotify API results for reddit titles
-  const details = await getSpotDetails(parsedRedditData, params.q);
+  //Removes duplicates from array
+  allItems = Array.from(new Set(allItems.map((item) => item.spotInfo.url))).map(
+    (url) => {
+      return allItems.find((item) => item.spotInfo.url === url);
+    }
+  );
 
+  console.timeEnd("dbsave");
   res.json({
-    results: details,
+    results: allItems,
   });
 };
 
@@ -32,7 +62,7 @@ const searchReddit = async (q, t, sort) => {
   url += "sort=" + sort + "&";
   url += "t=" + t + "&";
   url += "restrict_sr=" + "1" + "&";
-  url += "limit=" + "10" + "&";
+  url += "limit=" + "50" + "&";
   url += "after=" + "after";
 
   const options = {
@@ -56,40 +86,41 @@ const searchReddit = async (q, t, sort) => {
 };
 
 const parseRedditData = (list, requestType) => {
-  //Sets orderID to reorder array as spotify data is not returned in order
-  let orderID = -1;
-
   //Creates array of two types of object eith useable data from reddit api results.
   //Filtered by reddit results that include a spotify link in title or description, and those that do not.
   const results = list.map((child) => {
-    orderID += 1;
     let tempObj = {};
     if (child.data.url.includes("open.spotify.com")) {
       tempObj = {
         type: "spotify",
-        _id: extractID(child.data.url),
-        spotifyType: extractSpotType(child.data.url),
+        spotInfo: {
+          id: extractID(child.data.url),
+          type: extractSpotType(child.data.url),
+        },
       };
     } else if (child.data.selftext.includes("open.spotify.com")) {
       tempObj = {
         type: "spotify",
-        _id: extractID(child.data.selftext),
-        spotifyType: extractSpotType(child.data.selftext),
+        spotInfo: {
+          id: extractID(child.data.selftext),
+          type: extractSpotType(child.data.selftext),
+        },
       };
     } else {
       tempObj = {
         type: "text",
-        redditArtist: extractArtist(he.decode(child.data.title)),
-        redditAlbum: extractAlbum(he.decode(child.data.title)),
+        spotInfo: null,
       };
     }
     return {
-      orderID,
+      _id: child.data.id,
       requestType,
-      redditTitle: he.decode(child.data.title).replace(/\[[^()]*\]/g, ""),
-      timestamp: child.data.created,
-      score: child.data.score,
-      redditURL: "https://www.reddit.com" + child.data.permalink,
+      redditInfo: {
+        artist: extractArtist(he.decode(child.data.title)),
+        album: extractAlbum(he.decode(child.data.title)),
+        score: child.data.score,
+        url: "https://www.reddit.com" + child.data.permalink,
+      },
       ...tempObj,
     };
   });
@@ -152,32 +183,40 @@ const getSpotDetails = async (redditData, requestType) => {
 
   //Splits reddit results objects into 3 arrays. Spotify album urls, spotify track urls and Text for manual search
   const [albumData, trackData, strSearchData] = [
-    redditData.filter((item) => item.spotifyType == "album"),
-    redditData.filter((item) => item.spotifyType == "track"),
+    redditData.filter(
+      (item) => item.type == "spotify" && item.spotInfo.type == "album"
+    ),
+    redditData.filter(
+      (item) => item.type == "spotify" && item.spotInfo.type == "track"
+    ),
     redditData.filter((item) => item.type == "text"),
   ];
 
   //Makes different Spotify API calls depending on data supplied
   //Then combines results back into single array
-  let spotifyResults = [
-    ...(await getSpotItems(albumData, "album", requestType)),
-    ...(await getSpotItems(trackData, "track")),
-    ...(await getSpotSearches(strSearchData)),
-  ];
+  let spotifyResults = [];
+  spotifyResults =
+    albumData.length > 0
+      ? [
+          ...spotifyResults,
+          ...(await getSpotItems(albumData, "album", requestType)),
+        ]
+      : [...spotifyResults];
+  spotifyResults =
+    trackData.length > 0
+      ? [
+          ...spotifyResults,
+          ...(await getSpotItems(trackData, "track", requestType)),
+        ]
+      : [...spotifyResults];
+  spotifyResults =
+    strSearchData.length > 0
+      ? [...spotifyResults, ...(await getSpotSearches(strSearchData))]
+      : [...spotifyResults];
 
-  //Filters out none results & resorts array in order of original reddit results
-  spotifyResults = spotifyResults
-    .filter((item) => typeof item !== "undefined" && isIllegalTerm(item))
-    .sort((a, b) =>
-      a.orderID > b.orderID ? 1 : b.orderID > a.orderID ? -1 : 0
-    );
-
-  //Removes duplicates from array
-  spotifyResults = Array.from(
-    new Set(spotifyResults.map((item) => item.url))
-  ).map((url) => {
-    return spotifyResults.find((item) => item.url === url);
-  });
+  spotifyResults = spotifyResults.filter(
+    (item) => item.spotInfoFound && !isIllegalTerm(item)
+  );
 
   console.table(spotifyResults);
 
@@ -185,14 +224,10 @@ const getSpotDetails = async (redditData, requestType) => {
 };
 
 const getSpotItems = async (itemList, spotType, requestType) => {
-  //if no results, return undefined array
-  if (itemList.length == 0) {
-    return [undefined];
-  }
-
   let results = [];
 
-  const chunkSize = 10;
+  //API allows reqeuests of 20 albums at once, and 50 tracks at once
+  const chunkSize = requestType == "album" ? 20 : 50;
 
   for (let i = 0; i < itemList.length; i += chunkSize) {
     //splits itemList into smaller array to not exceed API rate limit
@@ -201,7 +236,7 @@ const getSpotItems = async (itemList, spotType, requestType) => {
     //Constructs url with multiple id's
     let url = `https://api.spotify.com/v1/${spotType}s/?ids=`;
     chunk.forEach((item) => {
-      url += item._id + ",";
+      url += item.spotInfo.id + ",";
     });
     url = url.slice(0, -1);
 
@@ -226,17 +261,20 @@ const getSpotItems = async (itemList, spotType, requestType) => {
         try {
           results.push({
             ...item,
-            name: res.albums[i].name,
-            image: res.albums[i].images[0].url,
-            released: res.albums[i].release_date,
-            url: res.albums[i].external_urls.spotify,
-            artist: {
-              name: res.albums[i].artists[0].name,
-              url: res.albums[i].artists[0].external_urls.spotify,
-            },
-            album: {
+            spotInfoFound: true,
+            spotInfo: {
               name: res.albums[i].name,
+              image: res.albums[i].images[0].url,
+              released: res.albums[i].release_date,
               url: res.albums[i].external_urls.spotify,
+              artist: {
+                name: res.albums[i].artists[0].name,
+                url: res.albums[i].artists[0].external_urls.spotify,
+              },
+              album: {
+                name: res.albums[i].name,
+                url: res.albums[i].external_urls.spotify,
+              },
             },
           });
         } catch (err) {
@@ -250,17 +288,20 @@ const getSpotItems = async (itemList, spotType, requestType) => {
           try {
             results.push({
               ...item,
-              name: res.tracks[i].name,
-              image: res.tracks[i].album.images[0].url,
-              url: res.tracks[i].external_urls.spotify,
-              released: res.tracks[i].release_date,
-              artist: {
-                name: res.tracks[i].artists[0].name,
-                url: res.tracks[i].artists[0].external_urls.spotify,
-              },
-              album: {
-                name: res.tracks[i].album.name,
-                url: res.tracks[i].album.external_urls.spotify,
+              spotInfoFound: true,
+              spotInfo: {
+                name: res.tracks[i].name,
+                image: res.tracks[i].album.images[0].url,
+                url: res.tracks[i].external_urls.spotify,
+                released: res.tracks[i].release_date,
+                artist: {
+                  name: res.tracks[i].artists[0].name,
+                  url: res.tracks[i].artists[0].external_urls.spotify,
+                },
+                album: {
+                  name: res.tracks[i].album.name,
+                  url: res.tracks[i].album.external_urls.spotify,
+                },
               },
             });
           } catch (err) {
@@ -279,7 +320,7 @@ const getSpotSearches = async (searchList) => {
     searchList.map(async (item) => {
       //Searches spotify API using manually parsed artist & item terms extracted from reddit title for each item
       let url = `https://api.spotify.com/v1/search?q=${encodeURI(
-        item.redditArtist + " " + item.redditAlbum
+        item.redditInfo.artist + " " + item.redditInfo.album
       )}&type=${item.requestType}`;
 
       let options = {
@@ -296,48 +337,66 @@ const getSpotSearches = async (searchList) => {
       //Spotify API may return multiple results per search. Basic match on reddit title terms to try and specify correct item from list.
       const selectedItem =
         item.requestType == "album"
-          ? validateAlbum(res.albums.items, item.redditAlbum, item.redditArtist)
+          ? validateAlbum(
+              res.albums.items,
+              item.redditInfo.album,
+              item.redditInfo.artist
+            )
           : validateTrack(
               res.tracks.items,
-              item.redditAlbum,
-              item.redditArtist
+              item.redditInfo.album,
+              item.redditInfo.artist
             );
       if (selectedItem) {
         if (selectedItem.type == "album") {
           return {
             ...item,
-            name: selectedItem.name,
-            image: selectedItem.images[0].url,
-            url: selectedItem.external_urls.spotify,
-            released: selectedItem.release_date,
-            artist: {
-              name: selectedItem.artists[0].name,
-              url: selectedItem.artists[0].external_urls.spotify,
-            },
-            album: {
+            spotInfo: {
               name: selectedItem.name,
+              image: selectedItem.images[0].url,
               url: selectedItem.external_urls.spotify,
+              released: selectedItem.release_date,
+              artist: {
+                name: selectedItem.artists[0].name,
+                url: selectedItem.artists[0].external_urls.spotify,
+              },
+              album: {
+                name: selectedItem.name,
+                url: selectedItem.external_urls.spotify,
+              },
+              id: selectedItem.id,
+              type: extractSpotType(selectedItem.external_urls.spotify),
             },
-            _id: selectedItem.id,
+            spotInfoFound: true,
           };
         } else if (selectedItem.type == "track") {
           return {
             ...item,
-            name: selectedItem.name,
-            image: selectedItem.album.images[0].url,
-            url: selectedItem.external_urls.spotify,
-            released: selectedItem.release_date,
-            artist: {
-              name: selectedItem.album.artists[0].name,
-              url: selectedItem.album.artists[0].external_urls.spotify,
+            spotInfo: {
+              name: selectedItem.name,
+              image: selectedItem.album.images[0].url,
+              url: selectedItem.external_urls.spotify,
+              released: selectedItem.release_date,
+              artist: {
+                name: selectedItem.album.artists[0].name,
+                url: selectedItem.album.artists[0].external_urls.spotify,
+              },
+              album: {
+                name: selectedItem.album.name,
+                url: selectedItem.album.external_urls.spotify,
+              },
+              id: selectedItem.id,
+              type: extractSpotType(selectedItem.album.external_urls.spotify),
             },
-            album: {
-              name: selectedItem.album.name,
-              url: selectedItem.album.external_urls.spotify,
-            },
-            _id: selectedItem.id,
+            spotInfoFound: true,
           };
         }
+      } else {
+        return {
+          ...item,
+          spotInfo: null,
+          spotInfoFound: false,
+        };
       }
     })
   );
@@ -407,14 +466,14 @@ const isSavedToSpotify = (id) => {};
 
 //filtering out manually identified issues with data parsing
 const isIllegalTerm = (item) => {
-  let name = item.name.toLowerCase();
+  let name = item.spotInfo.name.toLowerCase();
   let type = item.requestType;
   if (
     name.includes("karaoke") ||
     name.includes("meditation") ||
     (name.includes("donda") && type == "track")
   ) {
-    return false;
+    return true;
   }
-  return true;
+  return false;
 };

@@ -68,3 +68,17 @@ This section has moved here: [https://facebook.github.io/create-react-app/docs/d
 ### `npm run build` fails to minify
 
 This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
+
+### ToDo
+
+Split user authentication for individual users
+Clean up dependencies vs. dev dependencies
+Add loading notification inbetween api calls & possibly lock from user input
+Add abillity to save albums / create playlist of songs
+
+DONE
+Clean up how arrays are sent for better next page ordering
+Clean up functions in search_controller file
+Add full info into json returned by search_controller
+Add searching reddit post text for spotify link
+Add more to search terms to search for flairs
