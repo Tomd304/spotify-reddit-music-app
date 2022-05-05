@@ -35,7 +35,6 @@ const Dashboard = (props) => {
       );
 
       const json = await res.json();
-      console.log(json);
       setMusicItems(json.results);
       setMusicItemsLoading(false);
     };

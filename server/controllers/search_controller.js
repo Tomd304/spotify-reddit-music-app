@@ -6,7 +6,6 @@ let MusicItem = require("../models/music-item");
 exports.getItems = async (req, res) => {
   console.time("dbsave");
   const access_token = req.headers["authorization"];
-  console.log(access_token);
   const params = req.query;
 
   //Gets reddit API call results
@@ -185,8 +184,6 @@ const extractAlbum = (str) => {
 };
 
 const getSpotDetails = async (redditData, requestType, access_token) => {
-  console.table(redditData);
-
   //Splits reddit results objects into 3 arrays. Spotify album urls, spotify track urls and Text for manual search
   const [albumData, trackData, strSearchData] = [
     redditData.filter(
@@ -241,8 +238,6 @@ const getSpotDetails = async (redditData, requestType, access_token) => {
     (item) => item.spotInfoFound && !isIllegalTerm(item)
   );
 
-  console.table(spotifyResults);
-
   return spotifyResults;
 };
 
@@ -271,7 +266,6 @@ const getSpotItems = async (itemList, spotType, requestType, access_token) => {
         Authorization: access_token,
       },
     };
-    console.log("getting id items...");
     const res = JSON.parse(await requestPromise(options));
 
     //Loops through spotify API res and creates useable object depending on album or track.
@@ -354,8 +348,6 @@ const getSpotSearches = async (searchList, access_token) => {
           Authorization: access_token,
         },
       };
-      console.log("getting search item...");
-
       const res = JSON.parse(await requestPromise(options));
 
       //Spotify API may return multiple results per search. Basic match on reddit title terms to try and specify correct item from list.
