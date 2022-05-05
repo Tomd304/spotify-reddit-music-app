@@ -22,7 +22,13 @@ exports.getItems = async (req, res) => {
   let dbDetails = [];
   let dbIDs = [];
   if (dbData.length > 0) {
-    dbDetails = dbData.map((i) => i._doc);
+    dbDetails = dbData.map((i) => {
+      return {
+        ...i._doc,
+        redditInfo: parsedRedditData.find((j) => j._id == i._doc._id)
+          .redditInfo,
+      };
+    });
     dbIDs = dbDetails.map((i) => i._id);
     let noResults = dbDetails
       .filter((i) => i.spotInfoFound == false)
