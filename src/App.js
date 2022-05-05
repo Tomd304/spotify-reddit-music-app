@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from "react";
 import Dashboard from "./Dashboard";
-import Login from "./Login";
 import "./App.css";
 import axios from "axios";
 import { Credentials } from "./Credentials";
@@ -20,8 +19,7 @@ function App() {
     }).then((tokenResponse) => {
       setToken("Bearer " + tokenResponse.data.access_token);
     });
-    console.log("APPPPPPPPPPPPPPPPPP");
-  }, []);
+  }, [spotify.ClientId, spotify.ClientSecret]);
 
   return <>{<Dashboard token={token} />}</>;
 }
