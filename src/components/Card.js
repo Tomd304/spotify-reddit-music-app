@@ -1,7 +1,6 @@
 import "./Card.css";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { solid, regular } from "@fortawesome/fontawesome-svg-core/import.macro"; // <-- import styles to be used
-import HeartIcon from "./HeartIcon";
 
 const Card = (props) => {
   return (
