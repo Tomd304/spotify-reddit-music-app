@@ -5,6 +5,7 @@ import SearchOptions from "./components/SearchOptions";
 import Header from "./components/Header";
 import Footer from "./components/Footer";
 import "./Dashboard.css";
+import axios from "axios";
 
 const Dashboard = (props) => {
   const [searchOps, setSearchOps] = useState({
@@ -16,9 +17,10 @@ const Dashboard = (props) => {
   const [musicItemsLoading, setMusicItemsLoading] = useState(true);
 
   useEffect(() => {
-    const redditGet = async (q, t, sort) => {
+    const redditGet = (q, t, sort) => {
       setMusicItemsLoading(true);
-      const res = await fetch(
+      console.log("calling");
+      axios(
         "http://localhost:5000/search/getItems?" +
           new URLSearchParams({
             q,
@@ -32,11 +34,10 @@ const Dashboard = (props) => {
             "Content-Type": "application/x-www-form-urlencoded",
           },
         }
-      );
-
-      const json = await res.json();
-      setMusicItems(json.results);
-      setMusicItemsLoading(false);
+      ).then((results) => {
+        setMusicItems(results.data.results);
+        setMusicItemsLoading(false);
+      });
     };
     redditGet(searchOps.q, searchOps.t, searchOps.sort);
   }, [searchOps]);
