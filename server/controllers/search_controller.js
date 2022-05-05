@@ -13,7 +13,7 @@ exports.getItems = async (req, res) => {
 
   //Parses reddit results into useable data (array of objects)
   const parsedRedditData = parseRedditData(redditData, params.q);
-  const redditIDs = parsedRedditData.map((i) => i._id);
+  let redditIDs = parsedRedditData.map((i) => i._id);
   const dbData = await MusicItem.find({
     _id: {
       $in: redditIDs,
@@ -24,6 +24,10 @@ exports.getItems = async (req, res) => {
   if (dbData.length > 0) {
     dbDetails = dbData.map((i) => i._doc);
     dbIDs = dbDetails.map((i) => i._id);
+    let noResults = dbDetails
+      .filter((i) => i.spotInfoFound == false)
+      .map((i) => i._id);
+    redditIDs = redditIDs.filter((i) => !noResults.includes(i));
   }
   const apiItems = parsedRedditData.filter((i) => !dbIDs.includes(i._id));
   let apiDetails = [];
@@ -45,6 +49,7 @@ exports.getItems = async (req, res) => {
   );
 
   console.timeEnd("dbsave");
+  console.log("RETURNING: " + allItems.length + " items");
   res.json({
     results: allItems,
   });
@@ -214,6 +219,10 @@ const getSpotDetails = async (redditData, requestType) => {
       ? [...spotifyResults, ...(await getSpotSearches(strSearchData))]
       : [...spotifyResults];
 
+  await MusicItem.insertMany(
+    spotifyResults.filter((item) => !item.spotInfoFound)
+  );
+
   spotifyResults = spotifyResults.filter(
     (item) => item.spotInfoFound && !isIllegalTerm(item)
   );
@@ -248,7 +257,7 @@ const getSpotItems = async (itemList, spotType, requestType) => {
         Authorization: "Bearer " + globalVal.access_token,
       },
     };
-
+    console.log("getting id items...");
     const res = JSON.parse(await requestPromise(options));
 
     //Loops through spotify API res and creates useable object depending on album or track.
@@ -331,6 +340,7 @@ const getSpotSearches = async (searchList) => {
           Authorization: "Bearer " + globalVal.access_token,
         },
       };
+      console.log("getting search item...");
 
       const res = JSON.parse(await requestPromise(options));
 
@@ -394,7 +404,7 @@ const getSpotSearches = async (searchList) => {
       } else {
         return {
           ...item,
-          spotInfo: null,
+          spotInfo: {},
           spotInfoFound: false,
         };
       }
