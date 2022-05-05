@@ -2,22 +2,28 @@ import React, { useState, useEffect } from "react";
 import Dashboard from "./Dashboard";
 import Login from "./Login";
 import "./App.css";
+import axios from "axios";
+import { Credentials } from "./Credentials";
 
 function App() {
   const [token, setToken] = useState("");
-
+  const spotify = Credentials();
   useEffect(() => {
-    const getToken = async () => {
-      console.log("getting token");
-      const response = await fetch("http://localhost:5000/auth/token");
-      const json = await response.json();
-      setToken(json.access_token);
-    };
-
-    getToken();
+    axios("https://accounts.spotify.com/api/token", {
+      headers: {
+        "Content-Type": "application/x-www-form-urlencoded",
+        Authorization:
+          "Basic " + btoa(spotify.ClientId + ":" + spotify.ClientSecret),
+      },
+      data: "grant_type=client_credentials",
+      method: "POST",
+    }).then((tokenResponse) => {
+      setToken("Bearer " + tokenResponse.data.access_token);
+    });
+    console.log("APPPPPPPPPPPPPPPPPP");
   }, []);
-  console.log(token);
-  return <>{token === "" ? <Login /> : <Dashboard token={token} />}</>;
+
+  return <>{<Dashboard token={token} />}</>;
 }
 
 export default App;

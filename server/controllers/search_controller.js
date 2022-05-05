@@ -1,11 +1,12 @@
 const requestPromise = require("request-promise");
-const globalVal = require("../globalVariables");
 const he = require("he");
 const { format: prettyFormat } = require("pretty-format");
 let MusicItem = require("../models/music-item");
 
 exports.getItems = async (req, res) => {
   console.time("dbsave");
+  const access_token = req.headers["authorization"];
+  console.log(access_token);
   const params = req.query;
 
   //Gets reddit API call results
@@ -32,7 +33,7 @@ exports.getItems = async (req, res) => {
   const apiItems = parsedRedditData.filter((i) => !dbIDs.includes(i._id));
   let apiDetails = [];
   if (apiItems.length > 0) {
-    apiDetails = await getSpotDetails(apiItems, params.q);
+    apiDetails = await getSpotDetails(apiItems, params.q, access_token);
     await MusicItem.insertMany(apiDetails);
   }
   let allItems = [...dbDetails, ...apiDetails];
@@ -183,7 +184,7 @@ const extractAlbum = (str) => {
   return reducedStr.split(" - ")[1];
 };
 
-const getSpotDetails = async (redditData, requestType) => {
+const getSpotDetails = async (redditData, requestType, access_token) => {
   console.table(redditData);
 
   //Splits reddit results objects into 3 arrays. Spotify album urls, spotify track urls and Text for manual search
@@ -204,19 +205,32 @@ const getSpotDetails = async (redditData, requestType) => {
     albumData.length > 0
       ? [
           ...spotifyResults,
-          ...(await getSpotItems(albumData, "album", requestType)),
+          ...(await getSpotItems(
+            albumData,
+            "album",
+            requestType,
+            access_token
+          )),
         ]
       : [...spotifyResults];
   spotifyResults =
     trackData.length > 0
       ? [
           ...spotifyResults,
-          ...(await getSpotItems(trackData, "track", requestType)),
+          ...(await getSpotItems(
+            trackData,
+            "track",
+            requestType,
+            access_token
+          )),
         ]
       : [...spotifyResults];
   spotifyResults =
     strSearchData.length > 0
-      ? [...spotifyResults, ...(await getSpotSearches(strSearchData))]
+      ? [
+          ...spotifyResults,
+          ...(await getSpotSearches(strSearchData, access_token)),
+        ]
       : [...spotifyResults];
 
   await MusicItem.insertMany(
@@ -232,7 +246,7 @@ const getSpotDetails = async (redditData, requestType) => {
   return spotifyResults;
 };
 
-const getSpotItems = async (itemList, spotType, requestType) => {
+const getSpotItems = async (itemList, spotType, requestType, access_token) => {
   let results = [];
 
   //API allows reqeuests of 20 albums at once, and 50 tracks at once
@@ -254,7 +268,7 @@ const getSpotItems = async (itemList, spotType, requestType) => {
       method: "get",
       headers: {
         "Content-Type": "application/json",
-        Authorization: "Bearer " + globalVal.access_token,
+        Authorization: access_token,
       },
     };
     console.log("getting id items...");
@@ -324,7 +338,7 @@ const getSpotItems = async (itemList, spotType, requestType) => {
   return results;
 };
 
-const getSpotSearches = async (searchList) => {
+const getSpotSearches = async (searchList, access_token) => {
   let spotResults = await Promise.all(
     searchList.map(async (item) => {
       //Searches spotify API using manually parsed artist & item terms extracted from reddit title for each item
@@ -337,7 +351,7 @@ const getSpotSearches = async (searchList) => {
         method: "get",
         headers: {
           "Content-Type": "application/json",
-          Authorization: "Bearer " + globalVal.access_token,
+          Authorization: access_token,
         },
       };
       console.log("getting search item...");

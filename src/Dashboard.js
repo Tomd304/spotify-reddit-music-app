@@ -14,24 +14,6 @@ const Dashboard = (props) => {
   });
   const [musicItems, setMusicItems] = useState([]);
   const [musicItemsLoading, setMusicItemsLoading] = useState(true);
-  const [albumLoading, setAlbumLoading] = useState(true);
-  const [savedAlbums, setSavedAlbums] = useState([]);
-  const [albumsSelected, setAlbumsSelected] = useState({
-    toSave: [],
-    toRemove: [],
-  });
-
-  useEffect(() => {
-    const getSavedAlbums = async () => {
-      console.log("getting saved");
-      setAlbumLoading(true);
-      const res = await fetch("http://localhost:5000/spotify/getSavedAlbums");
-      const json = await res.json();
-      setSavedAlbums(json.results);
-      setAlbumLoading(false);
-    };
-    getSavedAlbums();
-  }, []);
 
   useEffect(() => {
     const redditGet = async (q, t, sort) => {
@@ -42,13 +24,20 @@ const Dashboard = (props) => {
             q,
             t,
             sort,
-          })
+          }),
+        {
+          method: "get",
+          headers: {
+            Authorization: props.token,
+            "Content-Type": "application/x-www-form-urlencoded",
+          },
+        }
       );
+
       const json = await res.json();
       console.log(json);
       setMusicItems(json.results);
       setMusicItemsLoading(false);
-      console.log(musicItems);
     };
     redditGet(searchOps.q, searchOps.t, searchOps.sort);
   }, [searchOps]);
@@ -68,10 +57,10 @@ const Dashboard = (props) => {
       <div className="dashboard">
         <SearchOptions
           searchSubmit={searchSubmit}
-          loading={albumLoading || musicItemsLoading ? true : false}
+          loading={musicItemsLoading ? true : false}
         />
         <ul className="card-container">
-          {albumLoading || musicItemsLoading ? (
+          {musicItemsLoading ? (
             <p>Loading...</p>
           ) : musicItems.length > 0 ? (
             musicItems.map((item) => {
