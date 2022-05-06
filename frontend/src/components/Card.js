@@ -55,8 +55,12 @@ const Card = (props) => {
         <div style={{ color: " rgb(255, 88, 88)" }} className="link-item">
           <FontAwesomeIcon icon={solid("heart-circle-plus")} />
         </div>{" "}
-        <a href={props.item.redditInfo.url} className="link-item">
-          <FontAwesomeIcon icon={brands("reddit")} />
+        <a
+          style={{ color: "rgb(212, 212, 212)" }}
+          href={props.item.redditInfo.url}
+          className="link-item"
+        >
+          <FontAwesomeIcon icon={brands("reddit-alien")} />
         </a>
         <div style={{ color: "aliceblue" }} className="link-item">
           <FontAwesomeIcon icon={solid("share-nodes")} />
