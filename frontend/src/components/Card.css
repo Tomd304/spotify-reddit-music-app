@@ -1,86 +1,22 @@
 .card {
     width: 15em;
-    height: 22em;
+    height: 22.5em;
     background-color: #303030;
     padding: 1em;
     border-radius: 0.5em;
     text-align: center;
     position: relative;
     overflow: hidden;
-}
-
-.card-front {
     display: flex;
     flex-direction: column;
-    justify-content: center;
-    align-items: center;
-}
-
-.card-back {
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    gap: 0.7em;
-    margin-top: 1em;
-}
-
-.text-links {
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    gap: 0.6em;
-    margin-top: 0.8em;
-
-}
-
-.link-item {
-    width: 5em;
-    display: flex;
     justify-content: space-between;
 }
-
-
-.hidden {
-    top: 22em;
-}
-
-.shown {
-    top: 0em;
-}
-
-
-.options {
-    position: absolute;
-    height: 1.5em;
-    width: 15em;
-    cursor: pointer;
-    background-color: #444444;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    color: rgb(200, 200, 200);
-    left: 0;
-    bottom: 0;
-    border-radius: 0 0 0.5em 0.5em;
-}
-
 
 .card-img {
     height: 13em;
     width: 13em;
 }
 
-.img-back {
-    height: 6em;
-    width: 6em;
-    border-radius: 0.2em;
-}
-
-.card-img, h1, p {
-    margin-bottom: 0.5em;
-}
 
 a {
     color: white;
@@ -94,25 +30,30 @@ a:hover {
     /* no underline */
 }
 
-.card-container h1 {
-    font-size: 1em;
-    white-space: nowrap;
-    text-overflow: ellipsis;
-    overflow: hidden;
-    width: 200px;
-}
 
 
-.card .artist {
-    font-size: 1em;
-    white-space: nowrap;
-    text-overflow: ellipsis;
-    overflow: hidden;
-    width: 200px;
+.info {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-evenly;
+    height: 5em;
 }
+
+.artist, .item {
+    font-size: 0.8em;
+}
+
+.item {
+    font-weight: 600;
+    margin: 0.5em 0;
+    overflow-wrap: normal;
+    max-height: 2.5em;
+    overflow: hidden;
+}
+
 
 .card .score {
-    font-size: 0.85em;
+    font-size: 0.8em;
     white-space: nowrap;
     text-overflow: ellipsis;
     overflow: hidden;
@@ -121,10 +62,24 @@ a:hover {
 .icons {
     display: flex;
     justify-content: space-evenly;
-    width: 200px;
     margin: 0.2em 0;
+    width: 100%;
 }
 
 .accent {
     color: red
+}
+
+.text-links {
+    display: flex;
+    justify-content: space-evenly;
+    align-items: center;
+    height: 1em;
+}
+
+.link-item {
+    width: 5em;
+    display: flex;
+    justify-content: center;
+
 }

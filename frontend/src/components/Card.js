@@ -17,58 +17,51 @@ const Card = (props) => {
   };
   return (
     <div className="card">
-      {!flipped ? (
-        <div className="card-front">
-          <div className="options expand" onClick={onClick}>
-            <FontAwesomeIcon icon={solid("ellipsis")} />
-          </div>
-          <a href={props.item.spotInfo.url} rel="noreferrer" target="_blank">
-            <img src={props.item.spotInfo.image} className="card-img" />
-          </a>
-          <div className="icons">
-            <p className="score">
-              <FontAwesomeIcon icon={solid("arrow-up")} />
-              {" " + props.item.redditInfo.score}
-            </p>
-          </div>
-          <a href={props.item.spotInfo.url} rel="noreferrer" target="_blank">
-            <h1>{props.item.spotInfo.name}</h1>
-          </a>
-          <a
-            className="artist"
-            href={props.item.spotInfo.artist.url}
-            rel="noreferrer"
-            target="_blank"
-          >
-            <p>{props.item.spotInfo.artist.name}</p>
-          </a>
-        </div>
-      ) : (
-        <div className="card-back">
-          <div className="options minimise" onClick={onClick}>
-            <FontAwesomeIcon icon={solid("rotate-left")} />
-          </div>
+      <a href={props.item.spotInfo.url} rel="noreferrer" target="_blank">
+        <img src={props.item.spotInfo.image} className="card-img" />
+      </a>
+      <div className="info">
+        <p className="score">
+          <FontAwesomeIcon icon={solid("arrow-up")} />
+          {" " + props.item.redditInfo.score}
+        </p>
 
-          <img src={props.item.spotInfo.image} className="img-back" />
-          <div className="text-links">
-            <a href={props.item.spotInfo.artist.url} className="link-item">
-              Artist <FontAwesomeIcon icon={brands("spotify")} />
-            </a>
-            <a href={props.item.spotInfo.url} className="link-item">
-              Album <FontAwesomeIcon icon={brands("spotify")} />
-            </a>
-            <a href={props.item.redditInfo.url} className="link-item">
-              Reddit <FontAwesomeIcon icon={brands("reddit")} />
-            </a>
-            <div className="link-item">
-              Save <FontAwesomeIcon icon={solid("heart-circle-plus")} />
-            </div>
-            <div className="link-item">
-              Share <FontAwesomeIcon icon={solid("share-nodes")} />
-            </div>
-          </div>
+        <a
+          className="item"
+          href={props.item.spotInfo.url}
+          rel="noreferrer"
+          target="_blank"
+        >
+          {props.item.spotInfo.name}
+        </a>
+        <a
+          className="artist"
+          href={props.item.spotInfo.artist.url}
+          rel="noreferrer"
+          target="_blank"
+        >
+          {props.item.spotInfo.artist.name}
+        </a>
+      </div>
+
+      <div className="text-links">
+        <a
+          href={props.item.spotInfo.url}
+          style={{ color: "rgb(30 215 96)" }}
+          className="link-item"
+        >
+          <FontAwesomeIcon icon={brands("spotify")} />
+        </a>
+        <div style={{ color: " rgb(255, 88, 88)" }} className="link-item">
+          <FontAwesomeIcon icon={solid("heart-circle-plus")} />
+        </div>{" "}
+        <a href={props.item.redditInfo.url} className="link-item">
+          <FontAwesomeIcon icon={brands("reddit")} />
+        </a>
+        <div style={{ color: "aliceblue" }} className="link-item">
+          <FontAwesomeIcon icon={solid("share-nodes")} />
         </div>
-      )}
+      </div>
     </div>
   );
 };
