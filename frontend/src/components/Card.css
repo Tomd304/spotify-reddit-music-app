@@ -1,25 +1,81 @@
 .card {
     width: 15em;
-    height: 20.5em;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: flex-start;
+    height: 22em;
     background-color: #303030;
     padding: 1em;
     border-radius: 0.5em;
     text-align: center;
+    position: relative;
+    overflow: hidden;
 }
 
-.card:hover {
-    background-color: #333333;
+.card-front {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
+
+.card-back {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    gap: 0.7em;
+    margin-top: 1em;
+}
+
+.text-links {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    gap: 0.6em;
+    margin-top: 0.8em;
+
+}
+
+.link-item {
+    width: 5em;
+    display: flex;
+    justify-content: space-between;
+}
+
+
+.hidden {
+    top: 22em;
+}
+
+.shown {
+    top: 0em;
+}
+
+
+.options {
+    position: absolute;
+    height: 1.5em;
+    width: 15em;
     cursor: pointer;
+    background-color: #444444;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    color: rgb(200, 200, 200);
+    left: 0;
+    bottom: 0;
+    border-radius: 0 0 0.5em 0.5em;
 }
 
 
 .card-img {
     height: 13em;
     width: 13em;
+}
+
+.img-back {
+    height: 6em;
+    width: 6em;
+    border-radius: 0.2em;
 }
 
 .card-img, h1, p {
