@@ -1,6 +1,6 @@
 import "./Modal.css";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { solid, regular } from "@fortawesome/fontawesome-svg-core/import.macro"; // <-- import styles to be used
+import { solid } from "@fortawesome/fontawesome-svg-core/import.macro"; // <-- import styles to be used
 import {
   EmailShareButton,
   FacebookShareButton,
@@ -23,7 +23,6 @@ const Modal = (props) => {
   const iconSize = 40;
   const copyText = () => {
     copy(props.info.url);
-    alert(`You have copied "${props.info.url}"`);
     props.closeModal();
   };
   return (
