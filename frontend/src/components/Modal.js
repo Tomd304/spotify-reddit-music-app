@@ -17,10 +17,13 @@ import {
   WhatsappIcon,
 } from "react-share";
 
+import copy from "copy-to-clipboard";
+
 const Modal = (props) => {
   const iconSize = 40;
-  const copy = () => {
-    navigator.clipboard.writeText(props.info.url);
+  const copyText = () => {
+    copy(props.info.url);
+    alert(`You have copied "${props.info.url}"`);
     props.closeModal();
   };
   return (
@@ -55,10 +58,9 @@ const Modal = (props) => {
             <WhatsappIcon round={true} size={iconSize} />
           </WhatsappShareButton>
           <FontAwesomeIcon
-            onClick={copy}
+            onClick={copyText}
             className="copy-button"
             icon={solid("copy")}
-            size={iconSize}
           />
         </div>
       </div>
