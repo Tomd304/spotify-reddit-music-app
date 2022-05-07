@@ -45,9 +45,8 @@
     margin-bottom: "0.2em";
     padding: 0.4em;
     font-size: 1.275em;
-    border: 1px solid white;
     border-radius: 1em;
-    color: #303030;
-    background-color: #fff;
+    color: #white;
+    background-color: #3b5998;
     cursor: pointer;
 }

@@ -2,14 +2,14 @@ import "./Modal.css";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { solid } from "@fortawesome/fontawesome-svg-core/import.macro"; // <-- import styles to be used
 import {
-  FacebookMessengerShareButton,
+  FacebookShareButton,
   TelegramShareButton,
   TwitterShareButton,
   WhatsappShareButton,
 } from "react-share";
 
 import {
-  FacebookMessengerIcon,
+  FacebookIcon,
   TelegramIcon,
   TwitterIcon,
   WhatsappIcon,
@@ -24,7 +24,7 @@ const Modal = (props) => {
     props.closeModal();
   };
   return (
-    <div id="overlay">
+    <div id="overlay" onClick={props.closeModal}>
       <div className="pop-up">
         <div className="close-button">
           <FontAwesomeIcon
@@ -34,21 +34,19 @@ const Modal = (props) => {
           />
         </div>
         <div className="share-icons">
-          <FacebookMessengerShareButton
-            url={props.info.url}
-            onClick={props.closeModal}
-          >
-            <FacebookMessengerIcon round={true} size={iconSize} />
-          </FacebookMessengerShareButton>
+          <FacebookShareButton url={props.info.url} onClick={props.closeModal}>
+            <FacebookIcon round={true} size={iconSize} />
+          </FacebookShareButton>
           <TelegramShareButton url={props.info.url} onClick={props.closeModal}>
             <TelegramIcon round={true} size={iconSize} />
           </TelegramShareButton>
-          <TwitterShareButton url={props.info.url} onClick={props.closeModal}>
-            <TwitterIcon round={true} size={iconSize} />
-          </TwitterShareButton>
           <WhatsappShareButton url={props.info.url} onClick={props.closeModal}>
             <WhatsappIcon round={true} size={iconSize} />
           </WhatsappShareButton>
+          <TwitterShareButton url={props.info.url} onClick={props.closeModal}>
+            <TwitterIcon round={true} size={iconSize} />
+          </TwitterShareButton>
+
           <FontAwesomeIcon
             onClick={copyText}
             className="copy-button"
