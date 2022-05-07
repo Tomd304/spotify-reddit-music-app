@@ -4,6 +4,7 @@ import Card from "./components/Card";
 import SearchOptions from "./components/SearchOptions";
 import Header from "./components/Header";
 import Footer from "./components/Footer";
+import Modal from "./components/Modal";
 import "./Dashboard.css";
 import axios from "axios";
 
@@ -15,6 +16,8 @@ const Dashboard = (props) => {
   });
   const [musicItems, setMusicItems] = useState([]);
   const [musicItemsLoading, setMusicItemsLoading] = useState(true);
+  const [showModal, setShowModal] = useState(false);
+  const [shareInfo, setShareInfo] = useState({});
 
   useEffect(() => {
     const redditGet = (q, t, sort) => {
@@ -57,8 +60,21 @@ const Dashboard = (props) => {
     });
   };
 
+  const openModal = (e) => {
+    console.log(e);
+    document.body.style.overflow = "hidden";
+    setShareInfo(e);
+    setShowModal(true);
+  };
+
+  const closeModal = (e) => {
+    document.body.style.overflow = "";
+    setShowModal(false);
+  };
+
   return (
     <div className="view">
+      {showModal ? <Modal closeModal={closeModal} info={shareInfo} /> : null}
       <Header />
       <div className="dashboard">
         <SearchOptions
@@ -70,7 +86,7 @@ const Dashboard = (props) => {
             <p>Loading...</p>
           ) : musicItems.length > 0 ? (
             musicItems.map((item) => {
-              return <Card item={item} />;
+              return <Card item={item} openModal={openModal} />;
             })
           ) : (
             <p>No Results</p>

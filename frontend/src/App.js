@@ -7,6 +7,7 @@ import { Credentials } from "./Credentials";
 function App() {
   const [token, setToken] = useState("");
   const spotify = Credentials();
+  console.log(spotify);
   useEffect(() => {
     console.log("getting token");
     console.log("id: " + process.env.REACT_APP_CLIENT_ID);

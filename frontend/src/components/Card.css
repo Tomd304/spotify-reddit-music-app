@@ -21,12 +21,14 @@
 a {
     color: white;
     text-decoration: none;
+    cursor: auto;
     /* no underline */
 }
 
 a:hover {
     color: rgb(194, 194, 194);
     text-decoration: underline;
+
     /* no underline */
 }
 
