@@ -4,9 +4,6 @@ import { solid, brands } from "@fortawesome/fontawesome-svg-core/import.macro"; 
 import { useState } from "react";
 
 const Card = (props) => {
-  const [flipped, setFlipped] = useState(false);
-  const [disable, setDisable] = useState(false);
-
   return (
     <div className="card">
       <a href={props.item.spotInfo.url} rel="noreferrer" target="_blank">
