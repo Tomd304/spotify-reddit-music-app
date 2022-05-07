@@ -1,10 +1,10 @@
 import React from "react";
 import { useState, useEffect } from "react";
-import Card from "./components/Card";
-import SearchOptions from "./components/SearchOptions";
-import Header from "./components/Header";
-import Footer from "./components/Footer";
 import Modal from "./components/Modal";
+import Header from "./components/Header";
+import SearchOptions from "./components/SearchOptions";
+import CardContainer from "./components/CardContainer";
+import Footer from "./components/Footer";
 import "./Dashboard.css";
 import axios from "axios";
 
@@ -81,17 +81,11 @@ const Dashboard = (props) => {
           searchSubmit={searchSubmit}
           loading={musicItemsLoading ? true : false}
         />
-        <ul className="card-container">
-          {musicItemsLoading ? (
-            <p>Loading...</p>
-          ) : musicItems.length > 0 ? (
-            musicItems.map((item) => {
-              return <Card item={item} openModal={openModal} />;
-            })
-          ) : (
-            <p>No Results</p>
-          )}
-        </ul>
+        <CardContainer
+          musicItemsLoading={musicItemsLoading}
+          musicItems={musicItems}
+          openModal={openModal}
+        />
       </div>
       <Footer />
     </div>
