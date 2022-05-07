@@ -2,16 +2,14 @@ import "./Modal.css";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { solid } from "@fortawesome/fontawesome-svg-core/import.macro"; // <-- import styles to be used
 import {
-  EmailShareButton,
-  FacebookShareButton,
+  FacebookMessengerShareButton,
   TelegramShareButton,
   TwitterShareButton,
   WhatsappShareButton,
 } from "react-share";
 
 import {
-  EmailIcon,
-  FacebookIcon,
+  FacebookMessengerIcon,
   TelegramIcon,
   TwitterIcon,
   WhatsappIcon,
@@ -36,17 +34,12 @@ const Modal = (props) => {
           />
         </div>
         <div className="share-icons">
-          <EmailShareButton
+          <FacebookMessengerShareButton
             url={props.info.url}
-            subject="New Music"
-            body=""
             onClick={props.closeModal}
           >
-            <EmailIcon round={true} size={iconSize} />
-          </EmailShareButton>
-          <FacebookShareButton url={props.info.url} onClick={props.closeModal}>
-            <FacebookIcon round={true} size={iconSize} />
-          </FacebookShareButton>
+            <FacebookMessengerIcon round={true} size={iconSize} />
+          </FacebookMessengerShareButton>
           <TelegramShareButton url={props.info.url} onClick={props.closeModal}>
             <TelegramIcon round={true} size={iconSize} />
           </TelegramShareButton>
