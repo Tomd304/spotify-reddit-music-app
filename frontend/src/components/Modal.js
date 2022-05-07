@@ -1,6 +1,6 @@
 import "./Modal.css";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { solid } from "@fortawesome/fontawesome-svg-core/import.macro"; // <-- import styles to be used
+import { solid, regular } from "@fortawesome/fontawesome-svg-core/import.macro"; // <-- import styles to be used
 import {
   EmailShareButton,
   FacebookShareButton,
@@ -18,7 +18,11 @@ import {
 } from "react-share";
 
 const Modal = (props) => {
-  const iconSize = 50;
+  const iconSize = 40;
+  const copy = () => {
+    navigator.clipboard.writeText(props.info.url);
+    props.closeModal();
+  };
   return (
     <div id="overlay">
       <div className="pop-up">
@@ -50,6 +54,12 @@ const Modal = (props) => {
           <WhatsappShareButton url={props.info.url} onClick={props.closeModal}>
             <WhatsappIcon round={true} size={iconSize} />
           </WhatsappShareButton>
+          <FontAwesomeIcon
+            onClick={copy}
+            className="copy-button"
+            icon={solid("copy")}
+            size={iconSize}
+          />
         </div>
       </div>
     </div>
