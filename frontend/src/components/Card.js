@@ -6,15 +6,7 @@ import { useState } from "react";
 const Card = (props) => {
   const [flipped, setFlipped] = useState(false);
   const [disable, setDisable] = useState(false);
-  const onClick = () => {
-    if (!disable) {
-      setFlipped(!flipped);
-      setDisable(true);
-      setTimeout(() => {
-        setDisable(false);
-      }, 200);
-    }
-  };
+
   return (
     <div className="card">
       <a href={props.item.spotInfo.url} rel="noreferrer" target="_blank">
