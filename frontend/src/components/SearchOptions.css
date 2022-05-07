@@ -65,6 +65,10 @@ select:focus, select:active {
 }
 
 .not-clickable {
-cursor:not-allowed;
-color: rgb(194, 194, 194);
+    cursor: not-allowed;
+    color: rgb(194, 194, 194);
+}
+
+.disabled {
+    background-color: rgb(194, 194, 194);
 }
