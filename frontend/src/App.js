@@ -3,38 +3,27 @@ import Dashboard from "./Dashboard";
 import "./App.css";
 import axios from "axios";
 import { Credentials } from "./Credentials";
+import qs from "query-string";
+import { faQuoteLeftAlt } from "@fortawesome/free-solid-svg-icons";
 
 function App() {
   const [token, setToken] = useState("");
   const spotify = Credentials();
   console.log(spotify);
   useEffect(() => {
-    console.log("getting token");
-    console.log("id: " + process.env.REACT_APP_CLIENT_ID);
-    console.log("secret: " + process.env.REACT_APP_CLIENT_SECRET);
-
     const callToken = async () => {
       try {
-        const tokenResponse = await axios(
-          "https://accounts.spotify.com/api/token",
-          {
-            headers: {
-              "Content-Type": "application/x-www-form-urlencoded",
-              Authorization:
-                "Basic " +
-                btoa(
-                  process.env.REACT_APP_CLIENT_ID +
-                    ":" +
-                    process.env.REACT_APP_CLIENT_SECRET
-                ),
-            },
-            data: "grant_type=client_credentials",
-            method: "POST",
-          }
-        );
-        console.log(tokenResponse);
-        setToken("Bearer " + tokenResponse.data.access_token);
-        console.log("token set : " + token);
+        const queryString = window.location.search;
+        const urlParams = new URLSearchParams(queryString);
+        let urlToken = "";
+        if (urlParams.has("code")) {
+          urlToken = urlParams.get("code");
+          setToken("Bearer " + urlToken);
+          window.history.pushState({}, document.title, "/");
+        }
+        if (token == "" && urlToken == "") {
+          window.location.replace("http://localhost:5000/auth/login");
+        }
       } catch (e) {
         console.log(e);
       }
