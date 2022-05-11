@@ -48,6 +48,7 @@ const SearchOptions = (props) => {
           disabled={disable || props.loading}
           className={disable ? "disabled " : "" + "timeSelect"}
           name="t"
+          defaultValue="week"
         >
           <option name="year" value="year">
             Year
@@ -55,7 +56,7 @@ const SearchOptions = (props) => {
           <option name="month" value="month">
             Month
           </option>
-          <option selected="selected" name="week" value="week">
+          <option name="week" value="week">
             Week
           </option>
           <option name="day" value="day">

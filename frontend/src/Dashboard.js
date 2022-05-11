@@ -18,15 +18,28 @@ const Dashboard = (props) => {
   const [musicItemsLoading, setMusicItemsLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
   const [shareInfo, setShareInfo] = useState({});
+  const [savedAlbums, setSavedAlbums] = useState([]);
+
+  const getSavedAlbums = async () => {
+    console.log("getting saved");
+    console.time("savedAlbums");
+    let url = process.env.REACT_APP_BACKEND_URL + "spotify/getSavedAlbums";
+    let res = await fetch(url, {
+      headers: { Authorization: props.token },
+    });
+    let json = await res.json();
+    console.timeEnd("savedAlbums");
+    setSavedAlbums(json.results);
+  };
 
   useEffect(() => {
     const redditGet = (q, t, sort) => {
       setMusicItemsLoading(true);
       console.log("token in props: " + props.token);
-      console.log("calling");
       try {
         axios(
-          "https://quiet-badlands-79645.herokuapp.com/search/getItems?" +
+          process.env.REACT_APP_BACKEND_URL +
+            "search/getItems?" +
             new URLSearchParams({
               q,
               t,
@@ -40,15 +53,21 @@ const Dashboard = (props) => {
             },
           }
         ).then((results) => {
-          console.log("called");
           setMusicItems(results.data.results);
-          setMusicItemsLoading(false);
         });
       } catch (e) {
+        console.log("failed....");
         console.log(e);
       }
     };
-    redditGet(searchOps.q, searchOps.t, searchOps.sort);
+    const apiCalls = async () => {
+      await Promise.all([
+        getSavedAlbums(),
+        redditGet(searchOps.q, searchOps.t, searchOps.sort),
+      ]);
+      setMusicItemsLoading(false);
+    };
+    apiCalls();
   }, [searchOps]);
 
   const searchSubmit = (e) => {
@@ -60,8 +79,55 @@ const Dashboard = (props) => {
     });
   };
 
+  const addSavedAlbum = async (id) => {
+    console.log("sending");
+    console.log(id);
+    const res = await fetch(
+      process.env.REACT_APP_BACKEND_URL +
+        "spotify/saveAlbum?" +
+        new URLSearchParams({
+          id,
+        }),
+      {
+        method: "put",
+        headers: {
+          Authorization: props.token,
+        },
+      }
+    );
+    if (res.status == 200) {
+      setSavedAlbums([...savedAlbums, id]);
+      return true;
+    } else {
+      return false;
+    }
+  };
+
+  const removeSavedAlbum = async (id) => {
+    console.log("sending");
+    console.log(id);
+    const res = await fetch(
+      process.env.REACT_APP_BACKEND_URL +
+        "spotify/removeAlbum?" +
+        new URLSearchParams({
+          id,
+        }),
+      {
+        method: "delete",
+        headers: {
+          Authorization: props.token,
+        },
+      }
+    );
+    if (res.status == 200) {
+      setSavedAlbums([...savedAlbums].filter((i) => i !== id));
+      return true;
+    } else {
+      return false;
+    }
+  };
+
   const openModal = (e) => {
-    console.log(e);
     document.body.style.overflow = "hidden";
     setShareInfo(e);
     setShowModal(true);
@@ -85,6 +151,11 @@ const Dashboard = (props) => {
           musicItemsLoading={musicItemsLoading}
           musicItems={musicItems}
           openModal={openModal}
+          type={searchOps.q}
+          token={props.token}
+          savedAlbums={savedAlbums}
+          addSavedAlbum={addSavedAlbum}
+          removeSavedAlbum={removeSavedAlbum}
         />
       </div>
       <Footer />
